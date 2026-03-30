@@ -1,0 +1,31 @@
+# Source files
+src/
+
+# Config files
+.eslintrc.json
+.eslintignore
+.gitignore
+tsconfig.json
+
+# Dependencies
+node_modules/
+
+# Lock files
+yarn.lock
+package-lock.json
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Tests
+*.test.ts
+*.spec.ts
+
+# Environment
+.env
+.env.local
