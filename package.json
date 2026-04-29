@@ -4,8 +4,9 @@
   "description": "Mintly Library",
   "main": "build/index.js",
   "types": "build/index.d.ts",
+  "packageManager": "npm@11.11.0",
   "files": [
-    "build/**/*"
+    "build"
   ],
   "exports": {
     ".": {
@@ -19,9 +20,15 @@
     "clean": "rimraf build",
     "prebuild": "npm run clean",
     "build": "tsc",
+    "build:ci": "npm run build",
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint . --ext .ts --fix",
+    "typecheck": "tsc --noEmit",
+    "pack:check": "npm pack --dry-run",
     "prepublishOnly": "npm run build"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "keywords": [
     "typescript",
