@@ -1,0 +1,81 @@
+name: MintlyLib Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Which release channel to publish
+        required: true
+        default: production
+        type: choice
+        options:
+          - staging
+          - production
+      confirm_deploy:
+        description: Confirm that you want to run this publication
+        required: true
+        default: false
+        type: boolean
+
+concurrency:
+  group: mintlylib-deploy-${{ inputs.environment }}
+  cancel-in-progress: false
+
+jobs:
+  verify-inputs:
+    name: Confirm publication request
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Validate confirmation
+        run: |
+          if [ "${{ inputs.confirm_deploy }}" != "true" ]; then
+            echo "Publication cancelled because confirm_deploy was not checked."
+            exit 1
+          fi
+
+      - name: Print publication summary
+        run: |
+          echo "Environment: ${{ inputs.environment }}"
+
+  publish-npm:
+    name: Publish to npm
+    needs: verify-inputs
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: ESLint
+        run: npm run lint
+
+      - name: TypeScript check
+        run: npm run typecheck
+
+      - name: Build package
+        run: npm run build:ci
+
+      - name: Validate package contents
+        run: npm run pack:check
+
+      - name: Publish package
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          if [ "${{ inputs.environment }}" = "production" ]; then
+            npm publish
+          else
+            npm publish --tag next
+          fi
