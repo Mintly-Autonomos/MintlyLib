@@ -15,3 +15,7 @@ export type PaginationResponseDto = {
   orderDirection?: 'asc' | 'desc'
   createdAtDirection?: 'asc' | 'desc'
 }
+
+export type FindAllRequestDto<T> = Partial<T> & {
+  pagination: PaginationDto
+}
