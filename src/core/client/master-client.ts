@@ -6,5 +6,3 @@ export class MasterClient {
     this.personClient = new PersonClient()
   }
 }
-
-new MasterClient().personClient.insert({ id: '123', name: 'Alice', age: 30 })
