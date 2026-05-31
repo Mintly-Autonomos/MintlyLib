@@ -1,2 +1,2 @@
 export { Person } from './person-entity'
-export { personOrm } from './person-orm'
+export { personSchema } from './person-schema'
