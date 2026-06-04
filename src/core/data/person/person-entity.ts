@@ -1,4 +1,5 @@
+import type { Infer } from '@ascendance-hub/sapphire-core'
 import { Entity } from '../api/entity'
-import { personOrm } from './person-orm'
+import { personSchema } from './person-schema'
 
-export type Person = ReturnType<typeof personOrm.getType> & Entity
+export type Person = Infer<typeof personSchema> & Entity
