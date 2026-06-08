@@ -4,5 +4,5 @@ const s = new Sapphire()
 
 export const personSchema = s.object({
   name: s.string(),
-  age: s.number(),
+  email: s.string().email({ message: 'Informe um e-mail válido.' }),
 })
