@@ -3,6 +3,6 @@ import type { Person } from '../core/data/person/person-entity'
 
 export class PersonClient extends HttpBaseClient<Person> {
   constructor () {
-    super('person')
+    super('people')
   }
 }
