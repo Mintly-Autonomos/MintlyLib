@@ -1,13 +1,5 @@
-import type { Person } from '../person/person-entity'
+import type { Infer } from '@ascendance-hub/sapphire-core'
+import { Entity } from '../api/entity'
+import { userSchema } from './user-schema'
 
-export type UserStatus = 'active' | 'inactive' | 'blocked'
-export type UserRole = 'admin' | 'member'
-
-export interface User extends Person {
-  status: UserStatus
-  role: UserRole
-  restaurantId?: string
-  lastAccessAt?: string
-  createdAt: string
-  updatedAt: string
-}
+export type User = Infer<typeof userSchema> & Entity
