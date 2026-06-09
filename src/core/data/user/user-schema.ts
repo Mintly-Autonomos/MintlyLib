@@ -1,24 +1,33 @@
 import { Sapphire } from '@ascendance-hub/sapphire-core'
-import { personSchema } from '../person/person-schema'
+import { personRefSchema } from '../person/person-ref-schema'
+import { auditSchema } from '../common/audit'
 
 const s = new Sapphire()
 
-export const USER_STATUSES = ['active', 'inactive', 'blocked'] as const
-export const USER_ROLES = ['owner', 'member'] as const
+export enum UserStatus {
+  Active = 'active',
+  Inactive = 'inactive',
+  Blocked = 'blocked',
+}
 
-export type UserStatus = typeof USER_STATUSES[number]
-export type UserRole = typeof USER_ROLES[number]
+export enum UserRole {
+  Owner = 'owner',
+  Member = 'member',
+}
 
 /**
- * Usuário autenticável: É-UM Person (name, phone) + credencial e dados de acesso.
- * O e-mail é a credencial e vive aqui (não no person), com índice único na API.
+ * Usuário autenticável. O `person` é um Extended Reference ({ _id, name })
+ * para o documento em `people`; o e-mail é a credencial e vive aqui (índice
+ * único na API).
  */
-export const userSchema = personSchema.extend({
+export const userSchema = s.object({
+  person: personRefSchema,
   email: s.string().email({ message: 'Informe um e-mail válido.' }),
   passwordHash: s.string(),
-  status: s.type().enum(USER_STATUSES),
-  role: s.type().enum(USER_ROLES),
+  status: s.type().enum(UserStatus),
+  role: s.type().enum(UserRole),
   restaurantId: s.string(),
   termsAcceptedAt: s.string().optional(),
   lastAccessAt: s.string().optional(),
+  audit: auditSchema,
 })

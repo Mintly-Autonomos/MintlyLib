@@ -1,22 +1,31 @@
 import { Sapphire } from '@ascendance-hub/sapphire-core'
-import { RECORD_STATUSES } from '../common/status'
+import { RecordStatus } from '../common/status'
+import { auditSchema } from '../common/audit'
 
 const s = new Sapphire()
 
-export const CATEGORY_TYPES = ['revenue', 'expense'] as const
-export const CATEGORY_BEHAVIORS = ['fixed', 'variable'] as const
-export const OPERATIONAL_NATURES = ['operational', 'nonOperational'] as const
+export enum CategoryType {
+  Revenue = 'revenue',
+  Expense = 'expense',
+}
 
-export type CategoryType = typeof CATEGORY_TYPES[number]
-export type CategoryBehavior = typeof CATEGORY_BEHAVIORS[number]
-export type OperationalNature = typeof OPERATIONAL_NATURES[number]
+export enum CategoryBehavior {
+  Fixed = 'fixed',
+  Variable = 'variable',
+}
+
+export enum OperationalNature {
+  Operational = 'operational',
+  NonOperational = 'nonOperational',
+}
 
 export const financialCategorySchema = s.object({
   restaurantId: s.string(),
   name: s.string(),
-  type: s.type().enum(CATEGORY_TYPES),
-  behavior: s.type().enum(CATEGORY_BEHAVIORS),
-  operationalNature: s.type().enum(OPERATIONAL_NATURES),
-  status: s.type().enum(RECORD_STATUSES),
+  type: s.type().enum(CategoryType),
+  behavior: s.type().enum(CategoryBehavior),
+  operationalNature: s.type().enum(OperationalNature),
+  status: s.type().enum(RecordStatus),
   isSystem: s.boolean(),
+  audit: auditSchema,
 })

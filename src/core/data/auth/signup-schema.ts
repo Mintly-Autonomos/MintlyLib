@@ -6,13 +6,13 @@ import { passwordSchema } from './password-policy'
 const s = new Sapphire()
 
 /**
- * Payload do cadastro inicial. O `person` reaproveita o personSchema
- * ({ name, phone }) e a `password` reaproveita a passwordSchema.
- * A confirmação de senha e o aceite obrigatório são validações
- * cross-field tratadas no use case da API.
+ * Payload do cadastro inicial. O `person` reaproveita o personSchema sem o
+ * audit (`omit`), já que esses campos só são definidos no servidor. A
+ * confirmação de senha e o aceite obrigatório são validações cross-field
+ * tratadas no use case da API.
  */
 export const signupRequestSchema = s.object({
-  person: personSchema,
+  person: personSchema.omit(['audit']),
   email: s.string().email({ message: 'Informe um e-mail válido.' }),
   password: passwordSchema,
   restaurantName: s.string().min(2, { message: 'O nome do restaurante deve ter pelo menos 2 caracteres.' }),
