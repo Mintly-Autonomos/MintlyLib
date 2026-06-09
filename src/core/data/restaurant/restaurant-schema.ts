@@ -3,8 +3,7 @@ import { auditSchema } from '../common/audit'
 
 const s = new Sapphire()
 
-export const personSchema = s.object({
+export const restaurantSchema = s.object({
   name: s.string(),
-  phone: s.string(),
   audit: auditSchema,
 })

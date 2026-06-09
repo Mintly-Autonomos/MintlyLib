@@ -1,1 +1,5 @@
+export { AuthClient } from './auth-client'
 export { PersonClient } from './person-client'
+export { RestaurantClient } from './restaurant-client'
+export { FinancialAccountClient } from './financial-account-client'
+export { FinancialCategoryClient } from './financial-category-client'
