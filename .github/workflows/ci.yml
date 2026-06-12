@@ -71,7 +71,7 @@ jobs:
         id: bump
         run: |
           MSG="${{ github.event.head_commit.message }}"
-          if echo "$MSG" | grep -qiE '^Merge'; then
+          if echo "$MSG" | grep -qE '^Merge'; then
             echo "type=skip" >> $GITHUB_OUTPUT
             echo "label=skip (merge commit)" >> $GITHUB_OUTPUT
           elif echo "$MSG" | grep -qiE '^release(\(.+\))?[!:]'; then
