@@ -77,5 +77,5 @@ jobs:
           if [ "${{ inputs.environment }}" = "production" ]; then
             npm publish
           else
-            npm publish --tag next
+            npm publish --tag preview
           fi
