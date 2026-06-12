@@ -19,3 +19,8 @@ export interface LoginResult extends AuthTokens {
 }
 
 export type RefreshResult = AuthTokens
+
+/** Resposta das rotas de recuperação de senha — apenas a mensagem ao usuário. */
+export interface RecoveryMessageResult {
+  message: string
+}
