@@ -70,10 +70,13 @@ jobs:
 
       - name: Detectar maior bump em todos os commits do PR
         id: bump
+        # Não roda quando é promoção staging → main (versão já foi bumpeada)
+        if: >
+          !(github.event.pull_request.base.ref == 'main' &&
+            github.event.pull_request.head.ref == 'staging')
         run: |
           BUMP="patch"
           while IFS= read -r MSG; do
-            # Ignora merge commits
             if echo "$MSG" | grep -qE '^Merge'; then
               continue
             fi
@@ -95,8 +98,18 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Bump de versão (main)
-        if: github.event.pull_request.base.ref == 'main'
+      - name: Promover staging → main (remove sufixo -preview)
+        if: >
+          github.event.pull_request.base.ref == 'main' &&
+          github.event.pull_request.head.ref == 'staging'
+        run: |
+          BASE=$(node -p "require('./package.json').version" | sed 's/-preview$//')
+          npm version "$BASE" -m "chore(release): %s [skip ci]"
+
+      - name: Bump de versão (feature → main)
+        if: >
+          github.event.pull_request.base.ref == 'main' &&
+          github.event.pull_request.head.ref != 'staging'
         run: npm version ${{ steps.bump.outputs.type }} -m "chore(release): %s [skip ci]"
 
       - name: Bump de versão (staging — sufixo -preview)
