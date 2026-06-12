@@ -70,6 +70,12 @@ jobs:
       - name: Validate package contents
         run: npm run pack:check
 
+      - name: Aplicar sufixo -preview (staging)
+        if: inputs.environment == 'staging'
+        run: |
+          BASE=$(node -p "require('./package.json').version" | sed 's/-.*$//')
+          npm version "${BASE}-preview" --no-git-tag-version
+
       - name: Publish package
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
