@@ -2,19 +2,21 @@ name: MintlyLib CI
 
 on:
   pull_request:
-  push:
+    types: [opened, synchronize, reopened, closed]
     branches:
       - main
-      - develop
+      - staging
 
 concurrency:
-  group: mintlylib-ci-${{ github.ref }}
+  group: mintlylib-ci-${{ github.ref }}-${{ github.event.action }}
   cancel-in-progress: true
 
 jobs:
   quality:
     name: Quality Checks
     runs-on: ubuntu-latest
+    # Roda em qualquer PR aberto/atualizado, mas não no evento closed
+    if: github.event.action != 'closed'
 
     steps:
       - name: Checkout
@@ -44,9 +46,8 @@ jobs:
   auto-version:
     name: Auto Version Bump
     runs-on: ubuntu-latest
-    needs: quality
-    # Roda apenas em push direto na main (não em PRs)
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    # Roda apenas quando o PR é mergeado (não em push direto)
+    if: github.event.pull_request.merged == true
 
     permissions:
       contents: write
@@ -67,36 +68,43 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Detectar tipo de bump pelo commit
+      - name: Detectar maior bump em todos os commits do PR
         id: bump
         run: |
-          MSG="${{ github.event.head_commit.message }}"
-          if echo "$MSG" | grep -qE '^Merge'; then
-            echo "type=skip" >> $GITHUB_OUTPUT
-            echo "label=skip (merge commit)" >> $GITHUB_OUTPUT
-          elif echo "$MSG" | grep -qiE '^release(\(.+\))?[!:]'; then
-            echo "type=major" >> $GITHUB_OUTPUT
-            echo "label=major (+1.0.0)" >> $GITHUB_OUTPUT
-          elif echo "$MSG" | grep -qiE '^feat(\(.+\))?[!:]'; then
-            echo "type=minor" >> $GITHUB_OUTPUT
-            echo "label=minor (+0.1.0)" >> $GITHUB_OUTPUT
-          else
-            echo "type=patch" >> $GITHUB_OUTPUT
-            echo "label=patch (+0.0.1)" >> $GITHUB_OUTPUT
-          fi
+          BUMP="patch"
+          while IFS= read -r MSG; do
+            # Ignora merge commits
+            if echo "$MSG" | grep -qE '^Merge'; then
+              continue
+            fi
+            if echo "$MSG" | grep -qiE '^release(\(.+\))?[!:]'; then
+              BUMP="major"
+              break
+            elif echo "$MSG" | grep -qiE '^feat(\(.+\))?[!:]'; then
+              if [ "$BUMP" != "major" ]; then
+                BUMP="minor"
+              fi
+            fi
+          done <<< "$(git log ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }} --format='%s')"
 
-      - name: Resumo do bump detectado
-        run: echo "Bump detectado -> ${{ steps.bump.outputs.label }}"
+          echo "type=$BUMP" >> $GITHUB_OUTPUT
+          echo "Bump detectado: $BUMP"
 
       - name: Configurar git
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Bump de versão
-        if: steps.bump.outputs.type != 'skip'
+      - name: Bump de versão (main)
+        if: github.event.pull_request.base.ref == 'main'
         run: npm version ${{ steps.bump.outputs.type }} -m "chore(release): %s [skip ci]"
 
+      - name: Bump de versão (staging — sufixo -preview)
+        if: github.event.pull_request.base.ref == 'staging'
+        run: |
+          npm version ${{ steps.bump.outputs.type }} --no-git-tag-version
+          BASE=$(node -p "require('./package.json').version" | sed 's/-.*$//')
+          npm version "${BASE}-preview" -m "chore(release): %s [skip ci]"
+
       - name: Push do commit e tag de versão
-        if: steps.bump.outputs.type != 'skip'
         run: git push --follow-tags
