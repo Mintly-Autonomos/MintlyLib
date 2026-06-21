@@ -54,7 +54,7 @@ describe('financialAccountSchema', () => {
       type: FinancialAccountType.Platform,
       status: RecordStatus.Active,
       isDefault: false,
-      mockAudit
+      audit:mockAudit
       // Esquecemos de enviar as taxas de propósito!
     })
 
@@ -70,7 +70,7 @@ describe('financialAccountSchema', () => {
       isDefault: false,
       feePercent: 5,     // Não deveria existir!
       settlementDays: 2, // Não deveria existir!
-      mockAudit
+      audit:mockAudit
     })
 
     expect(result.success).toBe(false)
