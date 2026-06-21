@@ -56,6 +56,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
+          # Faz checkout da branch base (staging/main), não do merge ref em
+          # HEAD destacado — necessário para commitar o bump e dar push de volta.
+          ref: ${{ github.event.pull_request.base.ref }}
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -116,9 +119,13 @@ jobs:
       - name: Bump de versão (staging — sufixo -preview)
         if: github.event.pull_request.base.ref == 'staging'
         run: |
+          # Calcula a versão alvo aplicando o bump, depois reverte os arquivos
+          # para deixar o tree limpo — senão o npm version seguinte recusa o
+          # commit com "Git working directory not clean".
           npm version ${{ steps.bump.outputs.type }} --no-git-tag-version
           BASE=$(node -p "require('./package.json').version" | sed 's/-.*$//')
+          git checkout -- package.json package-lock.json
           npm version "${BASE}-preview" -m "chore(release): %s [skip ci]"
 
       - name: Push do commit e tag de versão
-        run: git push --follow-tags
+        run: git push --follow-tags origin HEAD:${{ github.event.pull_request.base.ref }}
