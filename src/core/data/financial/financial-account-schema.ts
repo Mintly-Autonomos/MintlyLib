@@ -24,7 +24,7 @@ export const baseAccountSchema = s.object({
       by: s.string(),
       action: s.string(),
       detail: s.string().optional(),
-    })
+    }),
   ).default([]),
   audit: auditSchema,
 })
@@ -33,8 +33,8 @@ export const baseAccountSchema = s.object({
 // O .extend() sobrescreve a base adicionando essas regras estritas
 const platformAccountSchema = baseAccountSchema.extend({
   type: s.type().literal(FinancialAccountType.Platform), // Força a ser 'platform'
-  feePercent: s.number().int().min(0),       // Obrigatório
-  settlementDays: s.number().int().min(0),   // Obrigatório
+  feePercent: s.number().int().min(0), // Obrigatório
+  settlementDays: s.number().int().min(0), // Obrigatório
 })
 
 // 3. AS OUTRAS CONTAS (Proíbem as taxas)
@@ -44,15 +44,15 @@ const standardAccountSchema = baseAccountSchema.extend({
     FinancialAccountType.Cash,
     FinancialAccountType.DigitalWallet,
   ]),
-  // Não colocamos feePercent e settlementDays aqui. 
+  // Não colocamos feePercent e settlementDays aqui.
   // Se o usuário enviar, o Sapphire vai recusar.
 })
 
 // 4. A EXPORTAÇÃO FINAL
 // Dizemos para a API: "A conta tem que ser OU plataforma OU padrão" - união discriminada
 export const financialAccountSchema = s.type().union([
-  platformAccountSchema, 
-  standardAccountSchema
+  platformAccountSchema,
+  standardAccountSchema,
 ])
 
 // .custom((data: any) => {
@@ -72,4 +72,3 @@ export const financialAccountSchema = s.type().union([
 //   }
 //   return data
 // })
-

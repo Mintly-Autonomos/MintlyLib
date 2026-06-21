@@ -5,11 +5,10 @@ const mockAudit = {
   createdAt: '2026-06-16T00:00:00.000Z',
   createdBy: 'user-test-123',
   updatedAt: '2026-06-16T00:00:00.000Z',
-  updatedBy: 'user-test-123'
+  updatedBy: 'user-test-123',
 }
 
 describe('financialAccountSchema', () => {
-  
   it('1. Deve APROVAR uma conta padrão (bank) sem taxas', () => {
     const result = financialAccountSchema.safeParse({
       restaurantId: 'rest-123',
@@ -17,12 +16,12 @@ describe('financialAccountSchema', () => {
       type: FinancialAccountType.Bank,
       status: RecordStatus.Active,
       isDefault: true,
-      audit:mockAudit
+      audit: mockAudit,
       // Não enviamos taxas aqui, o que é o correto para bank!
     })
 
     if (!result.success) {
-      console.log(result.error.flatten()) 
+      console.log(result.error.flatten())
     }
 
     expect(result.success).toBe(true)
@@ -35,13 +34,13 @@ describe('financialAccountSchema', () => {
       type: FinancialAccountType.Platform,
       status: RecordStatus.Active,
       isDefault: false,
-      feePercent: 12,       // Taxa enviada
-      settlementDays: 30,   // Prazo enviado
-      audit:mockAudit
+      feePercent: 12, // Taxa enviada
+      settlementDays: 30, // Prazo enviado
+      audit: mockAudit,
     })
 
     if (!result.success) {
-      console.log(result.error.flatten()) 
+      console.log(result.error.flatten())
     }
 
     expect(result.success).toBe(true)
@@ -54,7 +53,7 @@ describe('financialAccountSchema', () => {
       type: FinancialAccountType.Platform,
       status: RecordStatus.Active,
       isDefault: false,
-      audit:mockAudit
+      audit: mockAudit,
       // Esquecemos de enviar as taxas de propósito!
     })
 
@@ -68,12 +67,11 @@ describe('financialAccountSchema', () => {
       type: FinancialAccountType.Bank,
       status: RecordStatus.Active,
       isDefault: false,
-      feePercent: 5,     // Não deveria existir!
+      feePercent: 5, // Não deveria existir!
       settlementDays: 2, // Não deveria existir!
-      audit:mockAudit
+      audit: mockAudit,
     })
 
     expect(result.success).toBe(false)
   })
-
 })

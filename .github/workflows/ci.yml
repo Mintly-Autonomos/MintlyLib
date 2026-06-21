@@ -110,7 +110,8 @@ jobs:
         if: >
           github.event.pull_request.base.ref == 'main' &&
           github.event.pull_request.head.ref != 'staging'
-        run: npm version ${{ steps.bump.outputs.type }} -m "chore(release): %s [skip ci]"
+        run: |
+          npm version ${{ steps.bump.outputs.type }} -m "chore(release): %s [skip ci]"
 
       - name: Bump de versão (staging — sufixo -preview)
         if: github.event.pull_request.base.ref == 'staging'
