@@ -74,7 +74,12 @@ jobs:
         if: inputs.environment == 'staging'
         run: |
           BASE=$(node -p "require('./package.json').version" | sed 's/-.*$//')
-          npm version "${BASE}-preview" --no-git-tag-version
+          CURRENT=$(node -p "require('./package.json').version")
+          # Só aplica se ainda não estiver com -preview — senão o npm version
+          # aborta com "Version not changed" (a auto-version já commita X-preview).
+          if [ "$CURRENT" != "${BASE}-preview" ]; then
+            npm version "${BASE}-preview" --no-git-tag-version
+          fi
 
       - name: Publish package
         env:
