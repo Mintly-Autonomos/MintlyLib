@@ -1,10 +1,6 @@
 {
   "name": "mintly-lib",
-<<<<<<< Updated upstream
-  "version": "2.1.1-preview",
-=======
   "version": "2.1.0-preview",
->>>>>>> Stashed changes
   "description": "Mintly Library",
   "main": "build/index.js",
   "types": "build/index.d.ts",
