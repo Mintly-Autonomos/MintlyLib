@@ -129,3 +129,21 @@ jobs:
 
       - name: Push do commit e tag de versão
         run: git push --follow-tags origin HEAD:${{ github.event.pull_request.base.ref }}
+
+  publish:
+    name: Publish to npm
+    # Encadeado após o bump: roda no mesmo run do merge, então não esbarra na
+    # proteção anti-recursão do GITHUB_TOKEN (que impediria um deploy on:push).
+    needs: auto-version
+    # Publica apenas em merges para staging (preview) ou main (latest).
+    if: >
+      github.event.pull_request.merged == true &&
+      (github.event.pull_request.base.ref == 'staging' ||
+       github.event.pull_request.base.ref == 'main')
+    # Reutiliza toda a lógica de publicação do deploy.yml. A branch base já está
+    # versionada (auto-version deu push antes); staging -> preview, main -> latest.
+    uses: ./.github/workflows/deploy.yml
+    with:
+      ref: ${{ github.event.pull_request.base.ref }}
+      dist_tag: ${{ github.event.pull_request.base.ref == 'main' && 'latest' || 'preview' }}
+    secrets: inherit
