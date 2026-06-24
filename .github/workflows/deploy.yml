@@ -1,10 +1,29 @@
 name: MintlyLib Deploy
 
+# Publica o pacote no npm. NÃO altera a versão — a versão é decidida pelo job
+# `auto-version` do ci.yml (bump por mensagem de commit + sufixo -preview em
+# staging). Aqui só empacotamos e publicamos o que já está versionado.
+#
+# Dois modos de uso:
+#  - workflow_call: chamado pelo ci.yml logo após o auto-version, no mesmo run
+#    do merge (automático). staging -> dist-tag `preview`; main -> `latest`.
+#  - workflow_dispatch: fallback manual (Actions -> "MintlyLib Deploy" -> Run).
+
 on:
+  workflow_call:
+    inputs:
+      ref:
+        description: Ref (branch) já versionada a publicar
+        required: true
+        type: string
+      dist_tag:
+        description: dist-tag do npm (latest | preview)
+        required: true
+        type: string
   workflow_dispatch:
     inputs:
       environment:
-        description: Which release channel to publish
+        description: Canal de publicação
         required: true
         default: production
         type: choice
@@ -12,41 +31,36 @@ on:
           - staging
           - production
       confirm_deploy:
-        description: Confirm that you want to run this publication
+        description: Confirme que deseja publicar
         required: true
         default: false
         type: boolean
 
 concurrency:
-  group: mintlylib-deploy-${{ inputs.environment }}
+  group: mintlylib-deploy-${{ inputs.dist_tag || inputs.environment }}
   cancel-in-progress: false
 
 jobs:
-  verify-inputs:
-    name: Confirm publication request
+  publish-npm:
+    name: Publish to npm
     runs-on: ubuntu-latest
+    environment: ${{ inputs.environment || (inputs.dist_tag == 'latest' && 'production' || 'staging') }}
 
     steps:
-      - name: Validate confirmation
+      - name: Validar confirmação (dispatch manual)
+        if: github.event_name == 'workflow_dispatch'
         run: |
           if [ "${{ inputs.confirm_deploy }}" != "true" ]; then
-            echo "Publication cancelled because confirm_deploy was not checked."
+            echo "Publicação cancelada: confirm_deploy não foi marcado."
             exit 1
           fi
 
-      - name: Print publication summary
-        run: |
-          echo "Environment: ${{ inputs.environment }}"
-
-  publish-npm:
-    name: Publish to npm
-    needs: verify-inputs
-    runs-on: ubuntu-latest
-    environment: ${{ inputs.environment }}
-
-    steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # No modo automático, publica a branch já bumpada pelo auto-version.
+          # No dispatch manual, usa a ref onde o workflow foi acionado.
+          ref: ${{ inputs.ref || github.ref }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -70,22 +84,26 @@ jobs:
       - name: Validate package contents
         run: npm run pack:check
 
-      - name: Aplicar sufixo -preview (staging)
-        if: inputs.environment == 'staging'
+      - name: Resolver dist-tag
+        id: tag
         run: |
-          BASE=$(node -p "require('./package.json').version" | sed 's/-.*$//')
-          CURRENT=$(node -p "require('./package.json').version")
-          # Só aplica se ainda não estiver com -preview — senão o npm version
-          # aborta com "Version not changed" (a auto-version já commita X-preview).
-          if [ "$CURRENT" != "${BASE}-preview" ]; then
-            npm version "${BASE}-preview" --no-git-tag-version
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            # manual: production -> latest, staging -> preview
+            if [ "${{ inputs.environment }}" = "production" ]; then
+              echo "value=latest" >> "$GITHUB_OUTPUT"
+            else
+              echo "value=preview" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            echo "value=${{ inputs.dist_tag }}" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Publish package
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          if [ "${{ inputs.environment }}" = "production" ]; then
+          echo "Publicando $(node -p "require('./package.json').version") com dist-tag '${{ steps.tag.outputs.value }}'"
+          if [ "${{ steps.tag.outputs.value }}" = "latest" ]; then
             npm publish
           else
             npm publish --tag preview
