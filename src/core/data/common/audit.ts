@@ -9,8 +9,8 @@ const s = new Sapphire()
  * é criado antes de existir um "autor" para referenciar.
  */
 export const auditSchema = s.object({
-  createdAt: s.string(),
-  updatedAt: s.string(),
+  createdAt: s.date(),
+  updatedAt: s.date(),
   createdBy: s.string().optional(),
   updatedBy: s.string().optional(),
 })
