@@ -119,13 +119,19 @@ jobs:
       - name: Bump de versão (staging — sufixo -preview)
         if: github.event.pull_request.base.ref == 'staging'
         run: |
-          # Calcula a versão alvo aplicando o bump, depois reverte os arquivos
-          # para deixar o tree limpo — senão o npm version seguinte recusa o
-          # commit com "Git working directory not clean".
+          # Normaliza para a base de release (sem -preview) ANTES de aplicar o
+          # bump: `npm version patch` sobre X-preview apenas finaliza para X
+          # (não incrementa o número), o que faria o alvo "${BASE}-preview"
+          # ficar igual à versão atual e o npm abortar com "Version not changed".
+          # Depois reverte o tree (senão o npm version final recusa com "Git
+          # working directory not clean") e grava a versão -preview definitiva.
+          CURRENT=$(node -p "require('./package.json').version")
+          RELEASE=${CURRENT%-preview}
+          npm version "$RELEASE" --no-git-tag-version --allow-same-version
           npm version ${{ steps.bump.outputs.type }} --no-git-tag-version
-          BASE=$(node -p "require('./package.json').version" | sed 's/-.*$//')
+          NEXT=$(node -p "require('./package.json').version")
           git checkout -- package.json package-lock.json
-          npm version "${BASE}-preview" -m "chore(release): %s [skip ci]"
+          npm version "${NEXT}-preview" -m "chore(release): %s [skip ci]"
 
       - name: Push do commit e tag de versão
         run: git push --follow-tags origin HEAD:${{ github.event.pull_request.base.ref }}
