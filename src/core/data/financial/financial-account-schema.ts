@@ -55,21 +55,10 @@ export const financialAccountSchema = s.type().union([
   standardAccountSchema
 ])
 
-// .custom((data: any) => {
-//   // Validação Condicional: Plataforma exige taxas e prazos
-//   if (data.type === 'platform') {
-//     if (data.feePercent === undefined || data.feePercent === null) {
-//       throw new Error('feePercent é obrigatório para contas do tipo plataforma');
-//     }
-//     if (data.settlementDays === undefined || data.settlementDays === null) {
-//       throw new Error('settlementDays é obrigatório para contas do tipo plataforma');
-//     }
-//   } else {
-//     // Demais tipos proíbem taxas e prazos
-//     if (data.feePercent !== undefined || data.settlementDays !== undefined) {
-//       throw new Error(`Os campos feePercent e settlementDays não são permitidos para o tipo ${data.type}`);
-//     }
-//   }
-//   return data
-// })
-
+export const financialAccountUpdateSchema = s.object({
+  name: s.string(),
+  status: s.type().enum(RecordStatus),
+  type: s.type().enum(FinancialAccountType),
+  feePercent: s.number().int().min(0),
+  settlementDays: s.number().int().min(0),
+}).partial()
