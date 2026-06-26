@@ -20,7 +20,7 @@ export const baseAccountSchema = s.object({
   predictedBalance: s.number().default(0),
   history: s.array(
     s.object({
-      at: s.date(), // Date real (preenchido pelo sistema), não string ISO
+      at: s.date().coerce(),
       by: s.string(),
       action: s.string(),
       detail: s.string().optional(),

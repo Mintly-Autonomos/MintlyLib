@@ -27,7 +27,7 @@ export const userSchema = s.object({
   status: s.type().enum(UserStatus),
   role: s.type().enum(UserRole),
   restaurantId: s.string(),
-  termsAcceptedAt: s.string().optional(),
-  lastAccessAt: s.string().optional(),
+  termsAcceptedAt: s.date().coerce().optional(),
+  lastAccessAt: s.date().coerce().optional(),
   audit: auditSchema,
 })
