@@ -2,9 +2,9 @@ import { financialAccountSchema, FinancialAccountType } from './financial-accoun
 import { RecordStatus } from '../common/status'
 
 const mockAudit = {
-  createdAt: '2026-06-16T00:00:00.000Z',
+  createdAt: new Date('2026-06-16T00:00:00.000Z'),
   createdBy: 'user-test-123',
-  updatedAt: '2026-06-16T00:00:00.000Z',
+  updatedAt: new Date('2026-06-16T00:00:00.000Z'),
   updatedBy: 'user-test-123',
 }
 
