@@ -9,3 +9,13 @@ export {
   CategoryBehavior,
   OperationalNature,
 } from './financial-category-schema'
+
+export { FinancialMovement } from './financial-movement-entity'
+export {
+  financialMovementSchema,
+  MovementDirection,
+  MovementStatus,
+  PaymentMethod,
+  MovementOrigin,
+  CounterpartyKind,
+} from './financial-movement-schema'
