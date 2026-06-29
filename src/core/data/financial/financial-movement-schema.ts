@@ -10,9 +10,10 @@ const s = new Sapphire()
  * Collection `financial_movements` (snake_case); campos camelCase.
  *
  * Dinheiro (grossValue/feeValue/netValue) é modelado aqui logicamente como
- * `number` (sapphire-core). O tipo/validação Decimal128 é aplicado no lado da
- * API na persistência (sapphire-bson) — coerente com "schema na lib só com
- * sapphire-core".
+ * `number` (sapphire-core). O Decimal128 é aplicado no lado da API na
+ * persistência, via driver do mongo (`Decimal128` + `$inc`) — NÃO via
+ * sapphire-bson: ele só gera validator de collection e não suporta `decimal`
+ * (mapeia number -> bsonType 'number'). Ver Sapphire issue #39.
  */
 
 export enum MovementDirection {
