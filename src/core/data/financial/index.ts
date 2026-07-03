@@ -6,6 +6,7 @@ export type { FinancialAccountActionResult, InactivateFinancialAccountRequest } 
 export { FinancialCategory } from './financial-category-entity'
 export {
   financialCategorySchema,
+  financialCategoryUpdateSchema,
   CategoryType,
   CategoryBehavior,
   OperationalNature,
