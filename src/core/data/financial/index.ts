@@ -1,10 +1,12 @@
 export { FinancialAccount } from './financial-account-entity'
 export { financialAccountSchema, FinancialAccountType } from './financial-account-schema'
 export { financialAccountUpdateSchema } from './financial-account-schema'
+export type { FinancialAccountActionResult, InactivateFinancialAccountRequest } from './financial-account-response'
 
 export { FinancialCategory } from './financial-category-entity'
 export {
   financialCategorySchema,
+  financialCategoryUpdateSchema,
   CategoryType,
   CategoryBehavior,
   OperationalNature,
