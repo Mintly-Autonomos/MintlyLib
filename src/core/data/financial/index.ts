@@ -11,6 +11,7 @@ export {
   CategoryBehavior,
   OperationalNature,
 } from './financial-category-schema'
+export type { FinancialCategoryActionResult } from './financial-category-response'
 
 export { FinancialMovement } from './financial-movement-entity'
 export {
