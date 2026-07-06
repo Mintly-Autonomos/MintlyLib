@@ -53,3 +53,30 @@ export const financialCategoryUpdateSchema = s.object({
   operationalNature: s.type().enum(OperationalNature),
   status: s.type().enum(RecordStatus),
 }).partial()
+
+// Schema de INSERT (POST /financial-categories). Diferente do schema completo
+// (entity), os campos que o servidor computa/força ficam OPCIONAIS — assim o
+// client não precisa enviá-los (audit é preenchido no servidor; restaurantId vem
+// do RequestContext; isSystem/usage/history são forçados no repositório). Mantém
+// compatibilidade com clients que ainda enviam esses campos, e resolve o
+// VALIDATION_ERROR de quando o `audit` era obrigatório no insert.
+export const financialCategoryInsertSchema = s.object({
+  name: s.string(),
+  type: s.type().enum(CategoryType),
+  behavior: s.type().enum(CategoryBehavior),
+  operationalNature: s.type().enum(OperationalNature),
+  status: s.type().enum(RecordStatus),
+  restaurantId: s.string().optional(),
+  isSystem: s.boolean().optional(),
+  usage: s.number().int().optional(),
+  lastUsedAt: s.date().coerce().optional(),
+  history: s.array(
+    s.object({
+      at: s.date().coerce(),
+      by: s.string(),
+      action: s.string(),
+      detail: s.string().optional(),
+    }),
+  ).optional(),
+  audit: auditSchema.optional(),
+})

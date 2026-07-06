@@ -135,3 +135,60 @@ export const financialMovementSchema = s.type().union([
   inMovementSchema,
   outMovementSchema,
 ])
+
+// Sub-doc opcional da contraparte no request (cliente/fornecedor).
+const counterpartyRequestSchema = s.object({
+  name: s.string(),
+  kind: s.type().enum(CounterpartyKind),
+  refId: s.string().optional(),
+})
+
+/**
+ * Schema de REGISTRO (POST /financial-movements). NÃO é o schema da entity: o
+ * client envia `accountId`/`categoryId` (não os snapshots), e o servidor resolve
+ * conta+categoria vivas, monta os Extended References e computa fee/net/data
+ * prevista dentro da transação. Espelha o `RegisterMovementInput` da API.
+ */
+export const registerMovementSchema = s.object({
+  direction: s.type().enum(MovementDirection),
+  title: s.string().max(120),
+  grossValue: s.number().positive(),
+  date: s.date().coerce(),
+  accountId: s.string(),
+  categoryId: s.string(),
+  paymentMethod: s.type().enum(PaymentMethod),
+  status: s.type().enum(MovementStatus).optional(),
+  counterparty: counterpartyRequestSchema.optional(),
+  fiscalNote: s.string().optional(),
+  description: s.string().max(500).optional(),
+  origin: s.type().enum(MovementOrigin).optional(),
+  // Confirmação explícita para persistir uma possível duplicata (<2min).
+  confirmDuplicate: s.boolean().optional(),
+})
+
+/**
+ * Schema de EDIÇÃO (PATCH /financial-movements/:id). Todos os campos opcionais;
+ * `direction` é imutável (não entra aqui). Espelha o `UpdateMovementInput`.
+ */
+export const updateMovementSchema = s.object({
+  title: s.string().max(120),
+  grossValue: s.number().positive(),
+  date: s.date().coerce(),
+  paymentMethod: s.type().enum(PaymentMethod),
+  status: s.type().enum(MovementStatus),
+  accountId: s.string(),
+  categoryId: s.string(),
+  counterparty: counterpartyRequestSchema,
+  fiscalNote: s.string(),
+  description: s.string().max(500),
+}).partial()
+
+/** Corpo de PATCH /financial-movements/:id/status. */
+export const changeMovementStatusSchema = s.object({
+  status: s.type().enum(MovementStatus),
+})
+
+/** Corpo de POST /financial-movements/recompute-balances. */
+export const recomputeBalancesSchema = s.object({
+  accountId: s.string(),
+})
