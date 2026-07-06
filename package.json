@@ -1,6 +1,6 @@
 {
   "name": "mintly-lib",
-  "version": "2.6.0-preview",
+  "version": "2.7.0-preview",
   "description": "Mintly Library",
   "main": "build/index.js",
   "types": "build/index.d.ts",
