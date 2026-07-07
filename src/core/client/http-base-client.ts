@@ -1,20 +1,24 @@
-import axios, { AxiosInstance } from 'axios'
+import { AxiosInstance } from 'axios'
 import { BaseClient } from './base-client'
+import { createHttpConnection } from './create-connection'
 import { withHeaders } from './request-config'
 import { PaginationDto } from '../data/request/pagination'
 import { ResponseDto } from '../data/request/response'
 import { Headers } from '../data/request/headers'
 
+/**
+ * Caixa de ferramentas HTTP com todas as operações CRUD. Uso:
+ *  - recurso com CRUD COMPLETO (ex.: /people) → ESTENDE (herda tudo, é o contrato);
+ *  - recurso com CRUD PARCIAL (account/category/movement) → COMPÕE (`new
+ *    HttpBaseClient(...)`) e re-expõe só o subconjunto válido — senão herdaria
+ *    findById/delete inexistentes (404 em runtime).
+ * `connection` é público p/ os endpoints próprios dos clients compostos.
+ */
 export class HttpBaseClient<T> implements BaseClient<T> {
-  protected connection: AxiosInstance
+  readonly connection: AxiosInstance
 
   constructor (readonly baseUrl: string) {
-    this.connection = axios.create({
-      baseURL: process.env.BACK_END_URL + '/' + baseUrl,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
+    this.connection = createHttpConnection(baseUrl)
   }
 
   async insert (body: T, headers: Headers): Promise<ResponseDto<T>> {

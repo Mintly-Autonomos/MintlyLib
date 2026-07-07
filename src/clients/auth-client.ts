@@ -1,7 +1,8 @@
-import axios, { AxiosInstance } from 'axios'
+import { AxiosInstance } from 'axios'
 import type { ResponseDto } from '../core/data/request/response'
 import type { Headers } from '../core/data/request/headers'
 import { withHeaders } from '../core/client/request-config'
+import { createHttpConnection } from '../core/client/create-connection'
 import type { SignupRequest } from '../core/data/auth/signup-schema'
 import type { LoginRequest } from '../core/data/auth/login-schema'
 import type { SignupResult, LoginResult, RefreshResult, RecoveryMessageResult } from '../core/data/auth/auth-response'
@@ -16,12 +17,7 @@ export class AuthClient {
   protected connection: AxiosInstance
 
   constructor () {
-    this.connection = axios.create({
-      baseURL: process.env.BACK_END_URL + '/auth',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
+    this.connection = createHttpConnection('auth')
   }
 
   async signup (body: SignupRequest, headers: Headers): Promise<ResponseDto<SignupResult>> {
