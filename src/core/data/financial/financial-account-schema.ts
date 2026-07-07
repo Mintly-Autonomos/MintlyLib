@@ -33,7 +33,7 @@ export const baseAccountSchema = s.object({
 // O .extend() sobrescreve a base adicionando essas regras estritas
 const platformAccountSchema = baseAccountSchema.extend({
   type: s.type().literal(FinancialAccountType.Platform), // Força a ser 'platform'
-  feePercent: s.number().int().min(0), // Obrigatório
+  feePercent: s.number().min(0).max(100), // Obrigatório — taxa fracionária (ex.: 12.5%), 0..100
   settlementDays: s.number().int().min(0), // Obrigatório
 })
 
@@ -70,7 +70,7 @@ export const financialAccountUpdateSchema = s.object({
   name: s.string(),
   status: s.type().enum(RecordStatus),
   type: s.type().enum(FinancialAccountType),
-  feePercent: s.number().int().min(0),
+  feePercent: s.number().min(0).max(100),
   settlementDays: s.number().int().min(0),
 }).partial()
 
@@ -102,7 +102,7 @@ const baseAccountInsertSchema = s.object({
 
 const platformAccountInsertSchema = baseAccountInsertSchema.extend({
   type: s.type().literal(FinancialAccountType.Platform),
-  feePercent: s.number().int().min(0),
+  feePercent: s.number().min(0).max(100),
   settlementDays: s.number().int().min(0),
 })
 
