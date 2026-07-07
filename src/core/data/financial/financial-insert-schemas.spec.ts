@@ -64,6 +64,20 @@ describe('financialAccountInsertSchema', () => {
     })
     expect(result.success).toBe(false)
   })
+
+  it('REJEITA isDefault no insert (forçado pelo servidor — A3)', () => {
+    const result = financialAccountInsertSchema.safeParse({
+      name: 'Itaú PJ', type: 'bank', status: 'active', isDefault: true,
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it('REJEITA saldo de abertura no insert (só vem de movimentação — A3)', () => {
+    const result = financialAccountInsertSchema.safeParse({
+      name: 'Itaú PJ', type: 'bank', status: 'active', availableBalance: 1000,
+    })
+    expect(result.success).toBe(false)
+  })
 })
 
 describe('registerMovementSchema', () => {

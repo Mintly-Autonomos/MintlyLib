@@ -76,27 +76,16 @@ export const financialAccountUpdateSchema = s.object({
 
 // 6. SCHEMA DE INSERT (POST /financial-accounts)
 // Como o de criação, é uma UNIÃO discriminada por `type` (platform exige
-// fee/prazo; os outros proíbem). A diferença pro schema completo: os campos que
-// o servidor computa/força ficam OPCIONAIS — audit é preenchido no servidor,
-// restaurantId vem do RequestContext, isDefault é sempre false no insert (a
-// promoção a padrão é via SetDefault), e os saldos default pra 0. Assim o client
-// não precisa mandar esses campos (resolve o VALIDATION_ERROR do audit), mantendo
-// compat com quem ainda os envia.
+// fee/prazo; os outros proíbem). Os campos que o servidor COMPUTA/FORÇA ficam
+// FORA do schema (objeto estrito → enviá-los é rejeitado): isDefault (sempre
+// false no insert; padrão é via SetDefault), availableBalance/predictedBalance
+// (sempre 0; saldo só vem de movimentação) e history — assim o client não pode
+// injetá-los (A3). audit e restaurantId seguem opcionais: são preenchidos pelo
+// servidor (audit resolve o VALIDATION_ERROR; restaurantId vem do RequestContext).
 const baseAccountInsertSchema = s.object({
   name: s.string(),
   status: s.type().enum(RecordStatus),
   restaurantId: s.string().optional(),
-  isDefault: s.boolean().optional(),
-  availableBalance: s.number().optional(),
-  predictedBalance: s.number().optional(),
-  history: s.array(
-    s.object({
-      at: s.date().coerce(),
-      by: s.string(),
-      action: s.string(),
-      detail: s.string().optional(),
-    }),
-  ).optional(),
   audit: auditSchema.optional(),
 })
 
