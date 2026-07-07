@@ -79,9 +79,9 @@ const baseMovementSchema = s.object({
 
   // Snapshot da conta `platform` no momento do registro (mudança futura na
   // conta não altera o histórico). Ausentes em contas sem prazo/taxa.
-  feePercentApplied: s.number().int().min(0).optional(),
+  feePercentApplied: s.number().min(0).max(100).optional(),
   settlementDaysApplied: s.number().int().min(0).optional(),
-  predictedReceiptDate: s.date().optional(),
+  predictedReceiptDate: s.date().coerce().optional(), // coerce: consistente com `date`
 
   account: accountRefSchema,
 
@@ -100,7 +100,7 @@ const baseMovementSchema = s.object({
 
   history: s.array(
     s.object({
-      at: s.date(), // Date real (preenchido pelo sistema), não string ISO
+      at: s.date().coerce(), // coerce: consistente com `date` — aceita Date (servidor) ou ISO
       by: s.string(),
       action: s.string(),
       detail: s.string().optional(),

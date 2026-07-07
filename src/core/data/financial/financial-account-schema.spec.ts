@@ -74,4 +74,24 @@ describe('financialAccountSchema', () => {
 
     expect(result.success).toBe(false)
   })
+
+  const platformAccount = (feePercent: number) => ({
+    restaurantId: 'rest-123',
+    name: 'iFood',
+    type: FinancialAccountType.Platform,
+    status: RecordStatus.Active,
+    isDefault: false,
+    feePercent,
+    settlementDays: 30,
+    audit: mockAudit,
+  })
+
+  it('5. Deve APROVAR feePercent fracionário (ex.: 12.5%)', () => {
+    expect(financialAccountSchema.safeParse(platformAccount(12.5)).success).toBe(true)
+    expect(financialAccountSchema.safeParse(platformAccount(3.99)).success).toBe(true)
+  })
+
+  it('6. Deve REJEITAR feePercent acima de 100', () => {
+    expect(financialAccountSchema.safeParse(platformAccount(150)).success).toBe(false)
+  })
 })
