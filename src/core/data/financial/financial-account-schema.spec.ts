@@ -1,4 +1,4 @@
-import { financialAccountSchema, FinancialAccountType } from './financial-account-schema'
+import { financialAccountSchema, financialAccountUpdateSchema, FinancialAccountType } from './financial-account-schema'
 import { RecordStatus } from '../common/status'
 
 const mockAudit = {
@@ -93,5 +93,20 @@ describe('financialAccountSchema', () => {
 
   it('6. Deve REJEITAR feePercent acima de 100', () => {
     expect(financialAccountSchema.safeParse(platformAccount(150)).success).toBe(false)
+  })
+})
+
+describe('financialAccountUpdateSchema — type imutável (P5)', () => {
+  it('rejeita PATCH com type (o tipo da conta é imutável)', () => {
+    const result = financialAccountUpdateSchema.safeParse({ type: 'platform' })
+    expect(result.success).toBe(false)
+  })
+
+  it('continua aceitando PATCH de name', () => {
+    expect(financialAccountUpdateSchema.safeParse({ name: 'Caixa novo' }).success).toBe(true)
+  })
+
+  it('continua aceitando PATCH de feePercent (a coerência com o tipo é validada na API)', () => {
+    expect(financialAccountUpdateSchema.safeParse({ feePercent: 15 }).success).toBe(true)
   })
 })

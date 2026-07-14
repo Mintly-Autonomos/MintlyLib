@@ -57,19 +57,21 @@ export const financialAccountSchema = s.type().union([
 
 // 5. SCHEMA DE EDIÇÃO PARCIAL (PATCH / update)
 // Por que um schema separado em vez de reaproveitar o de cima:
-//  - O de criação é uma UNIÃO discriminada; união não tem .partial() no Sapphire,
-//    e num PATCH o `type` pode nem vir, então a regra cruzada (platform exige
-//    fee/prazo) não é verificável aqui — ela continua valendo só na criação.
+//  - O de criação é uma UNIÃO discriminada; união não tem .partial() no Sapphire.
 //  - Aqui usamos um OBJETO achatado + .partial(): todo campo vira opcional, mas
-//    o que for enviado é validado (ex.: feePercent inteiro e >= 0).
-//  - Listamos APENAS os campos editáveis. restaurantId, isDefault, saldos
-//    (availableBalance/predictedBalance), history e audit ficam de fora de
-//    propósito: como o objeto é estrito, enviá-los num PATCH é rejeitado
-//    (protege tenant e os valores computados pelo sistema).
+//    o que for enviado é validado (ex.: feePercent 0..100).
+//  - `type` NÃO está aqui de propósito (P5): o tipo da conta é IMUTÁVEL. Trocá-lo
+//    permitiria criar uma conta `platform` sem taxa/prazo (estado que a criação
+//    proíbe) e reescreveria o significado do histórico de movimentos, já que
+//    defaultStatus/computeSnapshot decidem tudo pelo `type`. Errou o tipo? Inative
+//    a conta e crie outra.
+//  - A coerência platform ⇔ taxa/prazo num PATCH depende do tipo ARMAZENADO, que o
+//    schema não conhece: é validada no lado da API (account-rules.ts).
+//  - restaurantId, isDefault, saldos, history e audit ficam de fora: o objeto é
+//    estrito, então enviá-los num PATCH é rejeitado.
 export const financialAccountUpdateSchema = s.object({
   name: s.string(),
   status: s.type().enum(RecordStatus),
-  type: s.type().enum(FinancialAccountType),
   feePercent: s.number().min(0).max(100),
   settlementDays: s.number().int().min(0),
 }).partial()
