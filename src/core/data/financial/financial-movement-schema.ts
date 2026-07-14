@@ -42,6 +42,20 @@ export enum MovementOrigin {
   Sefaz = 'sefaz',
 }
 
+/**
+ * Origem do status atual do movimento (P1 — liquidação automática).
+ *  - `auto`: status definido pelo sistema (registro ou settler por data).
+ *  - `manual`: um humano mexeu no status (PATCH /:id/status). Trava permanente:
+ *    o settler NUNCA mais reavalia esse movimento — quem tem a palavra final é o dono.
+ *
+ * Campo AUSENTE é lido como `auto` (docs anteriores a este campo). É isso que faz
+ * o backlog de pendentes vencidos liquidar na primeira rodada do settler.
+ */
+export enum MovementStatusSource {
+  Auto = 'auto',
+  Manual = 'manual',
+}
+
 export enum CounterpartyKind {
   Client = 'client',
   Supplier = 'supplier',
@@ -67,6 +81,8 @@ const baseMovementSchema = s.object({
   restaurantId: s.string(),
   title: s.string().max(120),
   status: s.type().enum(MovementStatus),
+  // Quem definiu o status atual (sistema vs humano). Opcional: docs antigos não têm.
+  statusSource: s.type().enum(MovementStatusSource).optional(),
   // `date` é informado pelo usuário (chega como ISO string no request); .coerce()
   // normaliza p/ Date. Os demais campos de data abaixo são preenchidos pelo
   // sistema com Date real, então ficam estritos (igual ao auditSchema).

@@ -23,6 +23,7 @@ export {
   recomputeBalancesSchema,
   MovementDirection,
   MovementStatus,
+  MovementStatusSource,
   PaymentMethod,
   MovementOrigin,
   CounterpartyKind,
