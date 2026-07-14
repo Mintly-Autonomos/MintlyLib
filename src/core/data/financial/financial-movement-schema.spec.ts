@@ -21,7 +21,7 @@ const mockAudit = {
 // Base válida de uma ENTRADA (in) — os testes derivam variações a partir daqui.
 // Função (não const) para que cada teste receba uma cópia própria e possa
 // espalhar/sobrescrever campos sem afetar os demais testes.
-function validInMovement() {
+function validInMovement () {
   return {
     restaurantId: 'rest-123',
     direction: MovementDirection.In,
@@ -41,7 +41,7 @@ function validInMovement() {
 
 // Corpo válido de registro (POST /financial-movements) — usa accountId/categoryId,
 // não os snapshots (essa resolução é feita pelo servidor).
-function validRegisterBody() {
+function validRegisterBody () {
   return {
     direction: MovementDirection.In,
     title: 'Venda balcão',
