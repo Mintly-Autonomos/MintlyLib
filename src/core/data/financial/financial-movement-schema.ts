@@ -97,7 +97,21 @@ const baseMovementSchema = s.object({
   // conta não altera o histórico). Ausentes em contas sem prazo/taxa.
   feePercentApplied: s.number().min(0).max(100).optional(),
   settlementDaysApplied: s.number().int().min(0).optional(),
-  predictedReceiptDate: s.date().coerce().optional(), // coerce: consistente com `date`
+
+  /**
+   * Vencimento: o dia em que o dinheiro entra ou sai. Campo ÚNICO — vale tanto
+   * para o repasse da plataforma (calculado pelo sistema: data + prazo da conta)
+   * quanto para o boleto do fornecedor (informado pelo dono). Ausente significa
+   * à vista, e é isso que faz o movimento nascer liquidado.
+   *
+   * Substitui o antigo `predictedReceiptDate`, que só existia para entrada de
+   * plataforma e não tinha onde guardar conta a pagar. Modelar os dois em campos
+   * separados obrigaria todo consumidor a desempatar
+   * `dueDate ?? predictedReceiptDate ?? date` para responder a mesma pergunta.
+   *
+   * coerce: consistente com `date` — aceita Date (servidor) ou ISO (client).
+   */
+  dueDate: s.date().coerce().optional(),
 
   account: accountRefSchema,
 
@@ -174,6 +188,9 @@ export const registerMovementSchema = s.object({
   categoryId: s.string(),
   paymentMethod: s.type().enum(PaymentMethod),
   status: s.type().enum(MovementStatus).optional(),
+  // Vencimento informado pelo dono (boleto, fiado, cheque pré). Em conta
+  // `platform` o servidor calcula sozinho quando este campo não vem.
+  dueDate: s.date().coerce().optional(),
   counterparty: counterpartyRequestSchema.optional(),
   fiscalNote: s.string().optional(),
   description: s.string().max(500).optional(),
@@ -192,6 +209,7 @@ export const updateMovementSchema = s.object({
   date: s.date().coerce(),
   paymentMethod: s.type().enum(PaymentMethod),
   status: s.type().enum(MovementStatus),
+  dueDate: s.date().coerce(),
   accountId: s.string(),
   categoryId: s.string(),
   counterparty: counterpartyRequestSchema,

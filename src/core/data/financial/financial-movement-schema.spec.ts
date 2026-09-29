@@ -1,6 +1,7 @@
 import {
   financialMovementSchema,
   registerMovementSchema,
+  updateMovementSchema,
   MovementDirection,
   MovementStatus,
   MovementStatusSource,
@@ -10,7 +11,7 @@ import {
 import { FinancialAccountType } from './financial-account-schema'
 import { CategoryType } from './financial-category-schema'
 
-// audit/history/predictedReceiptDate são preenchidos pelo sistema com Date real.
+// audit/history/dueDate são preenchidos pelo sistema com Date real.
 const mockAudit = {
   createdAt: new Date('2026-06-16T00:00:00.000Z'),
   createdBy: 'user-test-123',
@@ -89,7 +90,7 @@ describe('financialMovementSchema', () => {
       netValue: 88,
       feePercentApplied: 12,
       settlementDaysApplied: 30,
-      predictedReceiptDate: new Date('2026-07-16T00:00:00.000Z'),
+      dueDate: new Date('2026-07-16T00:00:00.000Z'),
       account: { _id: 'acc-2', name: 'iFood', type: FinancialAccountType.Platform },
       counterparty: { name: 'Cliente X', kind: 'client', refId: 'p-1' },
       description: 'Pedido via app',
@@ -178,5 +179,45 @@ describe('statusSource (P1 - liquidação automática)', () => {
   it('rejeita statusSource no payload de registro (campo do servidor)', () => {
     const body = { ...validRegisterBody(), statusSource: MovementStatusSource.Manual }
     expect(registerMovementSchema.safeParse(body).success).toBe(false)
+  })
+})
+
+describe('dueDate (M1 — vencimento)', () => {
+  it('aceita movimento com dueDate', () => {
+    const doc = { ...validInMovement(), dueDate: new Date('2026-07-16T00:00:00.000Z') }
+    expect(financialMovementSchema.safeParse(doc).success).toBe(true)
+  })
+
+  it('aceita movimento sem dueDate (à vista)', () => {
+    expect(financialMovementSchema.safeParse(validInMovement()).success).toBe(true)
+  })
+
+  it('coage dueDate em ISO string para Date', () => {
+    const doc = { ...validInMovement(), dueDate: '2026-07-16T00:00:00.000Z' }
+
+    const result = financialMovementSchema.safeParse(doc)
+
+    expect(result.success).toBe(true)
+    expect((result as any).data.dueDate).toBeInstanceOf(Date)
+  })
+
+  it('rejeita predictedReceiptDate: o campo não existe mais', () => {
+    const doc = { ...validInMovement(), predictedReceiptDate: new Date('2026-07-16T00:00:00.000Z') }
+    expect(financialMovementSchema.safeParse(doc).success).toBe(false)
+  })
+
+  it('aceita dueDate no registro (saída a prazo)', () => {
+    const body = {
+      ...validRegisterBody(),
+      direction: MovementDirection.Out,
+      title: 'Fornecedor Hortifruti',
+      paymentMethod: PaymentMethod.Boleto,
+      dueDate: '2026-07-19T00:00:00.000Z',
+    }
+    expect(registerMovementSchema.safeParse(body).success).toBe(true)
+  })
+
+  it('aceita dueDate na edição', () => {
+    expect(updateMovementSchema.safeParse({ dueDate: '2026-07-19T00:00:00.000Z' }).success).toBe(true)
   })
 })
