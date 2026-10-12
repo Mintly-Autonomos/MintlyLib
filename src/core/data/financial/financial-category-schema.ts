@@ -12,6 +12,23 @@ export enum CategoryType {
 export enum CategoryBehavior {
   Fixed = 'fixed',
   Variable = 'variable',
+  /** Parte fixa, parte variável (ex.: utilidades). No ponto de equilíbrio: N8, fatia 4. */
+  Mixed = 'mixed',
+}
+
+/**
+ * Classificação contábil da DESPESA no DRE (M2). Só existe em categoria de
+ * despesa — por isso a união discriminada por `type` abaixo.
+ *  - cmv: ingredientes e insumos (margem bruta)
+ *  - labor: pró-labore e salários (prime cost)
+ *  - tax: imposto — sai da despesa operacional; o DRE deduz pela alíquota (M5)
+ *  - opex: demais despesas operacionais
+ */
+export enum DreGroup {
+  Cmv = 'cmv',
+  Labor = 'labor',
+  Tax = 'tax',
+  Opex = 'opex',
 }
 
 export enum OperationalNature {
@@ -19,10 +36,9 @@ export enum OperationalNature {
   NonOperational = 'nonOperational',
 }
 
-export const financialCategorySchema = s.object({
+const baseCategorySchema = s.object({
   restaurantId: s.string(),
   name: s.string(),
-  type: s.type().enum(CategoryType),
   behavior: s.type().enum(CategoryBehavior),
   operationalNature: s.type().enum(OperationalNature),
   status: s.type().enum(RecordStatus),
@@ -42,6 +58,20 @@ export const financialCategorySchema = s.object({
   audit: auditSchema,
 })
 
+// União discriminada por `type` (mesmo recurso do financialAccountSchema): só
+// despesa tem dreGroup, e nela ele é obrigatório. O Sapphire não tem `refine`,
+// então é assim que a coerência tipo × grupo fica no contrato.
+const revenueCategorySchema = baseCategorySchema.extend({
+  type: s.type().literal(CategoryType.Revenue),
+})
+
+const expenseCategorySchema = baseCategorySchema.extend({
+  type: s.type().literal(CategoryType.Expense),
+  dreGroup: s.type().enum(DreGroup),
+})
+
+export const financialCategorySchema = s.type().union([revenueCategorySchema, expenseCategorySchema])
+
 // Campos editáveis via PATCH — mesmo padrão do financialAccountUpdateSchema:
 // objeto achatado + .partial(). restaurantId, isSystem, usage, lastUsedAt,
 // history e audit ficam de fora de propósito (protegidos/computados pelo
@@ -52,6 +82,8 @@ export const financialCategoryUpdateSchema = s.object({
   behavior: s.type().enum(CategoryBehavior),
   operationalNature: s.type().enum(OperationalNature),
   status: s.type().enum(RecordStatus),
+  // a coerência com o tipo GRAVADO é validada na API (category-rules)
+  dreGroup: s.type().enum(DreGroup),
 }).partial()
 
 // Schema de INSERT (POST /financial-categories). Diferente do schema completo
@@ -66,6 +98,8 @@ export const financialCategoryInsertSchema = s.object({
   behavior: s.type().enum(CategoryBehavior),
   operationalNature: s.type().enum(OperationalNature),
   status: s.type().enum(RecordStatus),
+  // opcional: a API completa com 'opex' em despesa e recusa em receita
+  dreGroup: s.type().enum(DreGroup).optional(),
   restaurantId: s.string().optional(),
   isSystem: s.boolean().optional(),
   usage: s.number().int().optional(),

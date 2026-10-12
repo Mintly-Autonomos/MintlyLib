@@ -1,4 +1,4 @@
-import { financialCategorySchema, financialCategoryUpdateSchema, CategoryType, CategoryBehavior, OperationalNature } from './financial-category-schema'
+import { financialCategorySchema, financialCategoryUpdateSchema, financialCategoryInsertSchema, CategoryType, CategoryBehavior, OperationalNature, DreGroup } from './financial-category-schema'
 import { RecordStatus } from '../common/status'
 
 const mockAudit = {
@@ -83,5 +83,34 @@ describe('financialCategoryUpdateSchema', () => {
     const result = financialCategoryUpdateSchema.safeParse({ isSystem: true })
 
     expect(result.success).toBe(false)
+  })
+})
+
+describe('dreGroup e mixed (fatia 3)', () => {
+  const expense = { ...baseCategory, name: 'CMV/Insumos', type: CategoryType.Expense }
+
+  it('despesa exige dreGroup', () => {
+    expect(financialCategorySchema.safeParse(expense).success).toBe(false)
+    expect(financialCategorySchema.safeParse({ ...expense, dreGroup: DreGroup.Cmv }).success).toBe(true)
+  })
+
+  it('receita não aceita dreGroup', () => {
+    expect(financialCategorySchema.safeParse({ ...baseCategory, dreGroup: DreGroup.Opex }).success).toBe(false)
+    expect(financialCategorySchema.safeParse(baseCategory).success).toBe(true)
+  })
+
+  it('aceita behavior mixed', () => {
+    expect(financialCategorySchema.safeParse({ ...expense, dreGroup: DreGroup.Opex, behavior: CategoryBehavior.Mixed }).success).toBe(true)
+  })
+
+  it('rejeita dreGroup desconhecido', () => {
+    expect(financialCategorySchema.safeParse({ ...expense, dreGroup: 'outro' }).success).toBe(false)
+  })
+
+  it('insert e update aceitam dreGroup opcional', () => {
+    expect(financialCategoryInsertSchema.safeParse({ name: 'X', type: CategoryType.Expense, behavior: CategoryBehavior.Fixed, operationalNature: OperationalNature.Operational, status: RecordStatus.Active }).success).toBe(true)
+    expect(financialCategoryInsertSchema.safeParse({ name: 'X', type: CategoryType.Expense, behavior: CategoryBehavior.Fixed, operationalNature: OperationalNature.Operational, status: RecordStatus.Active, dreGroup: DreGroup.Labor }).success).toBe(true)
+    expect(financialCategoryUpdateSchema.safeParse({ dreGroup: DreGroup.Tax }).success).toBe(true)
+    expect(financialCategoryUpdateSchema.safeParse({ dreGroup: 'outro' }).success).toBe(false)
   })
 })
