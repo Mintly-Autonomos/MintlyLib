@@ -8,6 +8,7 @@ import type {
   UpdateMovementRequest,
   MovementListQuery,
   FinancialMovementActionResult,
+  ChangeMovementStatusRequest,
 } from '../core/data/financial/financial-movement-response'
 
 /**
@@ -38,9 +39,15 @@ export class FinancialMovementClient {
     return response.data
   }
 
-  /** Muda o status (pending/settled/cancelled) corrigindo o saldo. */
-  async changeStatus (id: string, status: MovementStatus, headers: Headers): Promise<ResponseDto<FinancialMovement>> {
-    const response = await this.http.connection.patch<ResponseDto<FinancialMovement>>(`/${id}/status`, { status }, withHeaders(headers))
+  /** Muda o status (pending/settled/cancelled) corrigindo o saldo. `settledAt` informa quando o dinheiro mexeu; ausente = agora. */
+  async changeStatus (
+    id: string,
+    status: MovementStatus,
+    headers: Headers,
+    options: { settledAt?: string | Date } = {},
+  ): Promise<ResponseDto<FinancialMovement>> {
+    const body: ChangeMovementStatusRequest = { status, ...options }
+    const response = await this.http.connection.patch<ResponseDto<FinancialMovement>>(`/${id}/status`, body, withHeaders(headers))
     return response.data
   }
 

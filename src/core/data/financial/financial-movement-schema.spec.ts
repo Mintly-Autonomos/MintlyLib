@@ -221,3 +221,23 @@ describe('dueDate (M1 — vencimento)', () => {
     expect(updateMovementSchema.safeParse({ dueDate: '2026-07-19T00:00:00.000Z' }).success).toBe(true)
   })
 })
+
+describe('settledAt (fatia 2 — quando o dinheiro mexeu)', () => {
+  it('aceita movimento liquidado com settledAt', () => {
+    const doc = { ...validInMovement(), settledAt: new Date('2026-07-16T00:00:00.000Z') }
+    expect(financialMovementSchema.safeParse(doc).success).toBe(true)
+  })
+
+  it('aceita movimento sem settledAt (documento antigo ou pendente)', () => {
+    expect(financialMovementSchema.safeParse(validInMovement()).success).toBe(true)
+  })
+
+  it('coage settledAt em ISO string para Date', () => {
+    const doc = { ...validInMovement(), settledAt: '2026-07-16T00:00:00.000Z' }
+
+    const result = financialMovementSchema.safeParse(doc)
+
+    expect(result.success).toBe(true)
+    expect((result as any).data.settledAt).toBeInstanceOf(Date)
+  })
+})
