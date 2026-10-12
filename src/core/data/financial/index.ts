@@ -11,6 +11,7 @@ export {
   CategoryType,
   CategoryBehavior,
   OperationalNature,
+  DreGroup,
 } from './financial-category-schema'
 export type { FinancialCategoryActionResult } from './financial-category-response'
 
@@ -34,4 +35,5 @@ export type {
   MovementListQuery,
   MovementCounterpartyInput,
   FinancialMovementActionResult,
+  ChangeMovementStatusRequest,
 } from './financial-movement-response'
