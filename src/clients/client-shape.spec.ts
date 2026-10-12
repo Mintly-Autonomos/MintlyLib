@@ -2,6 +2,7 @@ import { FinancialAccountClient } from './financial-account-client'
 import { FinancialCategoryClient } from './financial-category-client'
 import { FinancialMovementClient } from './financial-movement-client'
 import { PersonClient } from './person-client'
+import { ReportClient } from './report-client'
 
 // A10: os clients de CRUD parcial (compostos) NÃO devem expor operações que a
 // rota não tem (findById/delete → 404 em runtime). Person, de CRUD completo,
@@ -45,5 +46,12 @@ describe('forma dos clients (A10)', () => {
     expect(typeof c.insert).toBe('function')
     expect(typeof c.findById).toBe('function')
     expect(typeof c.delete).toBe('function')
+  })
+
+  it('ReportClient: só os relatórios; sem CRUD genérico', () => {
+    const c = new ReportClient() as any
+    expect(typeof c.cashFlow).toBe('function')
+    expect(c.insert).toBeUndefined()
+    expect(c.findAll).toBeUndefined()
   })
 })

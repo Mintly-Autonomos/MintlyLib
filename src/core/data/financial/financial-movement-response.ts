@@ -35,6 +35,16 @@ export interface RegisterMovementRequest {
   confirmDuplicate?: boolean
 }
 
+/**
+ * Corpo de PATCH /financial-movements/:id/status. `settledAt` só vale quando o
+ * novo status é `settled`: é quando o dinheiro mexeu de fato (ex.: "paguei o
+ * boleto na sexta e só lancei na segunda"). Ausente = agora. Data futura → 400.
+ */
+export interface ChangeMovementStatusRequest {
+  status: MovementStatus
+  settledAt?: string | Date
+}
+
 /** Corpo de PATCH /financial-movements/:id. `direction` é imutável. */
 export interface UpdateMovementRequest {
   title?: string

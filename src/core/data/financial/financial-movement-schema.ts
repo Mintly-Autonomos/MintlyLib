@@ -113,6 +113,17 @@ const baseMovementSchema = s.object({
    */
   dueDate: s.date().coerce().optional(),
 
+  /**
+   * Quando o dinheiro de fato entrou ou saiu. Preenchido pelo sistema ao
+   * liquidar: data do lançamento (à vista), vencimento (liquidação automática)
+   * ou o informado pelo dono no PATCH de status. Ausente em pendente/cancelado e
+   * em documentos anteriores ao campo — quem lê usa `settledAt ?? dueDate ?? date`.
+   *
+   * Sem ele, um boleto pago com atraso apareceria no dia do vencimento na série
+   * realizada do Fluxo de Caixa.
+   */
+  settledAt: s.date().coerce().optional(),
+
   account: accountRefSchema,
 
   paymentMethod: s.type().enum(PaymentMethod),
