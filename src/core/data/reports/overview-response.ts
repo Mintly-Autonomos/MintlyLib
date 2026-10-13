@@ -34,6 +34,11 @@ export interface HealthPillar {
 export interface OverviewHealth {
   score: number | null
   label: HealthLabel
+  /**
+   * Mês dos pilares do mês. Mês atual: o último mês fechado (+ fôlego de hoje).
+   * Mês passado: o próprio mês, sem o fôlego (pilar `runway` sem dado).
+   */
+  basisMonth: string
   pillars: HealthPillar[]
   bands: { risk: number; attention: number }
 }
