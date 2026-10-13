@@ -4,7 +4,7 @@ import type { Insertable, Findable, Listable, Updatable } from '../core/client/b
 import type { FindAllRequestDto } from '../core/data/request/pagination'
 import type { Headers } from '../core/data/request/headers'
 import type { FinancialCategory } from '../core/data/financial/financial-category-entity'
-import type { FinancialCategoryActionResult } from '../core/data/financial/financial-category-response'
+import type { FinancialCategoryActionResult, Subcategory, SubcategoryRequest } from '../core/data/financial/financial-category-response'
 import { MovementDirection } from '../core/data/financial/financial-movement-schema'
 
 /**
@@ -47,6 +47,29 @@ implements Insertable<FinancialCategory>, Findable<FinancialCategory>, Listable<
   /** Sugestão de categorias por direção do movimento (SuggestCategoriesQuery). Read-only. */
   async suggestions (direction: MovementDirection, headers: Headers): Promise<ResponseDto<FinancialCategory[]>> {
     const response = await this.http.connection.get<ResponseDto<FinancialCategory[]>>('/suggestions', withHeaders(headers, { params: { direction } }))
+    return response.data
+  }
+
+  /** Cria uma subcategoria (funciona também em categoria de sistema). */
+  async addSubcategory (categoryId: string, body: SubcategoryRequest, headers: Headers): Promise<ResponseDto<Subcategory>> {
+    const response = await this.http.connection.post<ResponseDto<Subcategory>>(`/${categoryId}/subcategories`, body, withHeaders(headers))
+    return response.data
+  }
+
+  /** Renomeia a subcategoria (lançamentos já gravados mantêm o nome antigo). */
+  async updateSubcategory (categoryId: string, subcategoryId: string, body: SubcategoryRequest, headers: Headers): Promise<ResponseDto<Subcategory>> {
+    const response = await this.http.connection.patch<ResponseDto<Subcategory>>(`/${categoryId}/subcategories/${subcategoryId}`, body, withHeaders(headers))
+    return response.data
+  }
+
+  /** Inativa a subcategoria (some dos novos lançamentos; nada é apagado). */
+  async inactivateSubcategory (categoryId: string, subcategoryId: string, headers: Headers): Promise<ResponseDto<Subcategory>> {
+    const response = await this.http.connection.patch<ResponseDto<Subcategory>>(`/${categoryId}/subcategories/${subcategoryId}/inactivate`, undefined, withHeaders(headers))
+    return response.data
+  }
+
+  async reactivateSubcategory (categoryId: string, subcategoryId: string, headers: Headers): Promise<ResponseDto<Subcategory>> {
+    const response = await this.http.connection.patch<ResponseDto<Subcategory>>(`/${categoryId}/subcategories/${subcategoryId}/reactivate`, undefined, withHeaders(headers))
     return response.data
   }
 }

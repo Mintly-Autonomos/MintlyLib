@@ -36,6 +36,23 @@ export enum OperationalNature {
   NonOperational = 'nonOperational',
 }
 
+/**
+ * Subcategoria (M4, fatia 5): detalhe da categoria — CMV/Insumos → Frango, Óleo…
+ * Embutida no documento da categoria (poucas, lidas junto, sem $lookup) e
+ * gerida só pelo sub-recurso /:id/subcategories. Só inativação, nunca apagada.
+ */
+export const subcategorySchema = s.object({
+  _id: s.string(),
+  name: s.string().max(60),
+  status: s.type().enum(RecordStatus),
+})
+
+/** Corpo de POST /financial-categories/:id/subcategories. */
+export const subcategoryInsertSchema = s.object({ name: s.string().max(60) })
+
+/** Corpo de PATCH /financial-categories/:id/subcategories/:subId (status vai por inactivate/reactivate). */
+export const subcategoryUpdateSchema = s.object({ name: s.string().max(60) }).partial()
+
 const baseCategorySchema = s.object({
   restaurantId: s.string(),
   name: s.string(),
@@ -55,6 +72,8 @@ const baseCategorySchema = s.object({
       detail: s.string().optional(),
     }),
   ).default([]),
+  // Só muda pelo sub-recurso; os schemas de insert/update (estritos) não aceitam.
+  subcategories: s.array(subcategorySchema).default([]),
   audit: auditSchema,
 })
 

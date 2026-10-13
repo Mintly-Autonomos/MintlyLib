@@ -7,6 +7,7 @@ import {
   MovementStatusSource,
   PaymentMethod,
   MovementOrigin,
+  MovementChannel,
 } from './financial-movement-schema'
 import { FinancialAccountType } from './financial-account-schema'
 import { CategoryType } from './financial-category-schema'
@@ -239,5 +240,22 @@ describe('settledAt (fatia 2 — quando o dinheiro mexeu)', () => {
 
     expect(result.success).toBe(true)
     expect((result as any).data.settledAt).toBeInstanceOf(Date)
+  })
+})
+
+describe('canal e subcategoria (fatia 5)', () => {
+  it('aceita channel e subcategory opcionais', () => {
+    expect(financialMovementSchema.safeParse({ ...validInMovement(), channel: MovementChannel.Delivery, subcategory: { _id: 's1', name: 'Frango' } }).success).toBe(true)
+    expect(financialMovementSchema.safeParse(validInMovement()).success).toBe(true)
+  })
+
+  it('rejeita channel fora do enum', () => {
+    expect(financialMovementSchema.safeParse({ ...validInMovement(), channel: 'drive-thru' }).success).toBe(false)
+  })
+
+  it('registro e edição aceitam subcategoryId e channel', () => {
+    expect(registerMovementSchema.safeParse({ ...validRegisterBody(), subcategoryId: 's1', channel: MovementChannel.Shared }).success).toBe(true)
+    expect(updateMovementSchema.safeParse({ subcategoryId: 's1', channel: MovementChannel.DineIn }).success).toBe(true)
+    expect(updateMovementSchema.safeParse({ channel: 'outro' }).success).toBe(false)
   })
 })

@@ -4,6 +4,7 @@ import type {
   PaymentMethod,
   MovementOrigin,
   CounterpartyKind,
+  MovementChannel,
 } from './financial-movement-schema'
 
 /** Contraparte (cliente/fornecedor) enviada no request. */
@@ -33,6 +34,9 @@ export interface RegisterMovementRequest {
   origin?: MovementOrigin
   /** Confirma persistir uma possível duplicata (<2min). */
   confirmDuplicate?: boolean
+  /** Subcategoria da categoria escolhida; tem que estar ativa. */
+  subcategoryId?: string
+  channel?: MovementChannel
 }
 
 /**
@@ -57,6 +61,10 @@ export interface UpdateMovementRequest {
   counterparty?: MovementCounterpartyInput
   fiscalNote?: string
   description?: string
+  /** `null` limpa; a API valida o documento resultante, não este schema. */
+  subcategoryId?: string | null
+  /** `null` limpa (volta ao canal efetivo). */
+  channel?: MovementChannel | null
 }
 
 /** Filtros de GET /financial-movements. */

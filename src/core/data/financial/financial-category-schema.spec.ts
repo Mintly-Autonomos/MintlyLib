@@ -1,4 +1,4 @@
-import { financialCategorySchema, financialCategoryUpdateSchema, financialCategoryInsertSchema, CategoryType, CategoryBehavior, OperationalNature, DreGroup } from './financial-category-schema'
+import { financialCategorySchema, financialCategoryUpdateSchema, financialCategoryInsertSchema, CategoryType, CategoryBehavior, OperationalNature, DreGroup, subcategorySchema, subcategoryInsertSchema, subcategoryUpdateSchema } from './financial-category-schema'
 import { RecordStatus } from '../common/status'
 
 const mockAudit = {
@@ -112,5 +112,31 @@ describe('dreGroup e mixed (fatia 3)', () => {
     expect(financialCategoryInsertSchema.safeParse({ name: 'X', type: CategoryType.Expense, behavior: CategoryBehavior.Fixed, operationalNature: OperationalNature.Operational, status: RecordStatus.Active, dreGroup: DreGroup.Labor }).success).toBe(true)
     expect(financialCategoryUpdateSchema.safeParse({ dreGroup: DreGroup.Tax }).success).toBe(true)
     expect(financialCategoryUpdateSchema.safeParse({ dreGroup: 'outro' }).success).toBe(false)
+  })
+})
+
+describe('subcategorias (fatia 5)', () => {
+  it('lista padrão vazia; aceita subcategorias válidas', () => {
+    const parsed = financialCategorySchema.parse(baseCategory) as any
+    expect(parsed.subcategories).toEqual([])
+    expect(financialCategorySchema.safeParse({ ...baseCategory, subcategories: [{ _id: 's1', name: 'Frango', status: RecordStatus.Active }] }).success).toBe(true)
+  })
+
+  it('subcategoria exige status válido e nome até 60', () => {
+    expect(subcategorySchema.safeParse({ _id: 's1', name: 'x'.repeat(61), status: RecordStatus.Active }).success).toBe(false)
+    expect(subcategorySchema.safeParse({ _id: 's1', name: 'Frango', status: 'apagada' }).success).toBe(false)
+  })
+
+  it('cadastro e edição da categoria não aceitam subcategories', () => {
+    const insert = { name: 'X', type: CategoryType.Expense, behavior: CategoryBehavior.Fixed, operationalNature: OperationalNature.Operational, status: RecordStatus.Active }
+    expect(financialCategoryInsertSchema.safeParse({ ...insert, subcategories: [] }).success).toBe(false)
+    expect(financialCategoryUpdateSchema.safeParse({ subcategories: [] }).success).toBe(false)
+  })
+
+  it('schemas do sub-recurso', () => {
+    expect(subcategoryInsertSchema.safeParse({ name: 'Óleo' }).success).toBe(true)
+    expect(subcategoryInsertSchema.safeParse({}).success).toBe(false)
+    expect(subcategoryUpdateSchema.safeParse({ name: 'Óleo de soja' }).success).toBe(true)
+    expect(subcategoryUpdateSchema.safeParse({ status: 'inactive' }).success).toBe(false)
   })
 })
