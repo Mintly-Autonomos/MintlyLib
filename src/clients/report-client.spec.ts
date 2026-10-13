@@ -1,3 +1,4 @@
+import { MovementChannel } from '../core/data/financial/financial-movement-schema'
 import { ReportClient } from './report-client'
 
 describe('ReportClient', () => {
@@ -23,5 +24,15 @@ describe('ReportClient', () => {
 
     expect(get).toHaveBeenCalledWith('/result', expect.objectContaining({ params: { month: '2026-07' } }))
     expect(res.payload).toEqual({ referenceMonth: '2026-07' })
+  })
+
+  it('expenses faz GET /expenses com mês e canal na query', async () => {
+    const client = new ReportClient()
+    const get = jest.spyOn((client as any).http.connection, 'get').mockResolvedValue({ data: { payload: { referenceMonth: '2026-08' } } } as any)
+
+    const res = await client.expenses({ month: '2026-08', channel: MovementChannel.Delivery }, { env: 'staging', authorization: 'Bearer t' } as any)
+
+    expect(get).toHaveBeenCalledWith('/expenses', expect.objectContaining({ params: { month: '2026-08', channel: 'delivery' } }))
+    expect(res.payload).toEqual({ referenceMonth: '2026-08' })
   })
 })
