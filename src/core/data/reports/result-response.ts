@@ -45,7 +45,9 @@ export type ResultInsight =
 export interface ResultBreakEven {
   fixedCosts: number
   variableCosts: number
+  /** Sobre a receita líquida: (líquida − variáveis) / líquida. */
   contributionMarginPct: number | null
+  /** Receita BRUTA do mês que paga os custos fixos — o que o dono compara com o que vende. */
   breakEvenRevenue: number | null
   reachedOnDay: number | null
 }
