@@ -15,6 +15,20 @@ export interface ExpensesQuery {
 
 export type ExpenseItemKind = 'category' | 'platformFee'
 
+/** Subitem de uma categoria (fatia 7): uma subcategoria, ou "Sem subitem" (`key: 'none'`). */
+export interface ExpenseSubitem {
+  key: string
+  subcategoryId: string | null
+  /** Nome atual da subcategoria (mesmo inativa); "Sem subitem". */
+  name: string
+  amount: number
+  previous: number
+  average3: number | null
+  deltaPrevious: number | null
+  deltaAverage3: number | null
+  anomaly: boolean
+}
+
 /** Linha de "Para onde está indo seu dinheiro": categoria ou taxa de uma conta de plataforma. */
 export interface ExpenseItem {
   /** categoryId, ou `platformFee:<accountId>`. */
@@ -31,6 +45,14 @@ export interface ExpenseItem {
   deltaPrevious: number | null
   deltaAverage3: number | null
   pctOfRevenue: number | null
+  /** [] quando a categoria não tem lançamento com subcategoria na janela; taxa → []. */
+  subitems: ExpenseSubitem[]
+  /** Selo "alerta": a categoria inteira ou algum subitem dela é atípico no mês. */
+  hasAnomaly: boolean
+  /** 6 meses, do mais antigo ao mês de referência (gráfico "Por categoria"). */
+  history: { month: string; amount: number }[]
+  /** Projeção do mês atual; null em mês fechado. */
+  projected: number | null
 }
 
 export interface ExpensesTotal {
@@ -47,7 +69,38 @@ export interface ExpensesPlatformFee {
   deltaPrevious: number | null
   /** Σ receita bruta de canal efetivo delivery no mês. */
   deliveryRevenue: number
+  /** Taxa / Σ receita bruta das contas de plataforma (a taxa e a venda que a gerou no mesmo denominador). */
   pctOfDelivery: number | null
+}
+
+/** Gasto atípico do mês ("Fique de olho"). Regra em `ExpensesReport.anomalyRule`. */
+export interface ExpenseAnomaly {
+  /** `ExpenseItem.key` da categoria. */
+  itemKey: string
+  categoryId: string | null
+  categoryName: string
+  subcategoryId: string | null
+  /** `ExpenseSubitem.key`; null = a categoria inteira foi avaliada (sem subitens). */
+  subitemKey: string | null
+  name: string
+  amount: number
+  average3: number
+  excess: number
+  pctAbove: number
+}
+
+/** Projeção linear do mês atual: total até hoje × daysInMonth / elapsedDays. */
+export interface ExpensesProjection {
+  total: number
+  elapsedDays: number
+  daysInMonth: number
+}
+
+/** Critério de anomalia (N4 — palpite, ainda não validado pelo negócio). */
+export interface ExpensesAnomalyRule {
+  minPctAbove: number
+  minExcess: number
+  minHistoryMonths: number
 }
 
 export interface ExpensesReport {
@@ -66,4 +119,9 @@ export interface ExpensesReport {
   sharedExcluded: number | null
   /** 6 meses, do mais antigo ao mês de referência. */
   history: { month: string; total: number }[]
+  /** Maior excedente primeiro. Só o mês de referência. */
+  anomalies: ExpenseAnomaly[]
+  /** Só quando o mês de referência é o mês atual. */
+  projection: ExpensesProjection | null
+  anomalyRule: ExpensesAnomalyRule
 }

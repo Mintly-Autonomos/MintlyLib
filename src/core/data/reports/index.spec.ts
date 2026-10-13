@@ -2,10 +2,30 @@ import type * as reports from './index'
 
 // Contrato só de tipos: o teste é o typecheck destas atribuições.
 describe('barrel de reports', () => {
-  it('exporta os tipos de Custos & Despesas', () => {
-    const item: reports.ExpenseItem = { key: 'c1', kind: 'category', categoryId: 'c1', name: 'CMV', behavior: 'variable' as any, dreGroup: 'cmv' as any, amount: 1, previous: 0, average3: null, deltaPrevious: null, deltaAverage3: null, pctOfRevenue: null }
+  it('exporta os tipos de Custos & Despesas (fatias 6 e 7)', () => {
+    const sub: reports.ExpenseSubitem = { key: 'none', subcategoryId: null, name: 'Sem subitem', amount: 1, previous: 0, average3: null, deltaPrevious: null, deltaAverage3: null, anomaly: false }
+    const item: reports.ExpenseItem = {
+      key: 'c1',
+      kind: 'category',
+      categoryId: 'c1',
+      name: 'CMV',
+      behavior: 'variable' as any,
+      dreGroup: 'cmv' as any,
+      amount: 1,
+      previous: 0,
+      average3: null,
+      deltaPrevious: null,
+      deltaAverage3: null,
+      pctOfRevenue: null,
+      subitems: [sub],
+      hasAnomaly: false,
+      history: [{ month: '2026-08', amount: 1 }],
+      projected: null,
+    }
+    const anomaly: reports.ExpenseAnomaly = { itemKey: 'c1', categoryId: 'c1', categoryName: 'CMV', subcategoryId: null, subitemKey: 'none', name: 'Sem subitem', amount: 300, average3: 100, excess: 200, pctAbove: 2 }
+    const rule: reports.ExpensesAnomalyRule = { minPctAbove: 0.5, minExcess: 100, minHistoryMonths: 2 }
+    const projection: reports.ExpensesProjection = { total: 10, elapsedDays: 10, daysInMonth: 31 }
     const query: reports.ExpensesQuery = { month: '2026-08' }
-    expect(item.kind).toBe('category')
-    expect(query.month).toBe('2026-08')
+    expect([item.subitems[0]?.key, anomaly.excess, rule.minExcess, projection.daysInMonth, query.month]).toEqual(['none', 200, 100, 31, '2026-08'])
   })
 })
