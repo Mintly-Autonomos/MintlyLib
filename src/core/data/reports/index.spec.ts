@@ -24,7 +24,7 @@ describe('barrel de reports', () => {
     }
     const anomaly: reports.ExpenseAnomaly = { itemKey: 'c1', categoryId: 'c1', categoryName: 'CMV', subcategoryId: null, subitemKey: 'none', name: 'Sem subitem', amount: 300, average3: 100, excess: 200, pctAbove: 2 }
     const rule: reports.ExpensesAnomalyRule = { minPctAbove: 0.5, minExcess: 100, minHistoryMonths: 2 }
-    const projection: reports.ExpensesProjection = { total: 10, elapsedDays: 10, daysInMonth: 31 }
+    const projection: reports.ExpensesProjection = { total: 10, revenue: 20, elapsedDays: 10, daysInMonth: 31 }
     const query: reports.ExpensesQuery = { month: '2026-08' }
     expect([item.subitems[0]?.key, anomaly.excess, rule.minExcess, projection.daysInMonth, query.month]).toEqual(['none', 200, 100, 31, '2026-08'])
   })
