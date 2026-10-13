@@ -1,3 +1,4 @@
+import { DashboardClient } from './dashboard-client'
 import { FinancialAccountClient } from './financial-account-client'
 import { FinancialCategoryClient } from './financial-category-client'
 import { FinancialMovementClient } from './financial-movement-client'
@@ -51,6 +52,13 @@ describe('forma dos clients (A10)', () => {
   it('ReportClient: só os relatórios; sem CRUD genérico', () => {
     const c = new ReportClient() as any
     expect(typeof c.cashFlow).toBe('function')
+    expect(c.insert).toBeUndefined()
+    expect(c.findAll).toBeUndefined()
+  })
+
+  it('DashboardClient: só a Visão Geral; sem CRUD genérico', () => {
+    const c = new DashboardClient() as any
+    expect(typeof c.overview).toBe('function')
     expect(c.insert).toBeUndefined()
     expect(c.findAll).toBeUndefined()
   })
