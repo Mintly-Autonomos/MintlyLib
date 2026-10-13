@@ -92,6 +92,8 @@ export interface ExpenseAnomaly {
 /** Projeção linear do mês atual: total até hoje × daysInMonth / elapsedDays. */
 export interface ExpensesProjection {
   total: number
+  /** Receita bruta projetada pela mesma regra (fatia 8 — Visão Geral). */
+  revenue: number
   elapsedDays: number
   daysInMonth: number
 }

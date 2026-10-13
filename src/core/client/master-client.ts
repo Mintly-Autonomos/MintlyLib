@@ -6,6 +6,7 @@ import {
   FinancialCategoryClient,
   FinancialMovementClient,
   ReportClient,
+  DashboardClient,
 } from '../../clients'
 
 export class MasterClient {
@@ -16,6 +17,7 @@ export class MasterClient {
   financialCategoryClient: FinancialCategoryClient
   financialMovementClient: FinancialMovementClient
   reportClient: ReportClient
+  dashboardClient: DashboardClient
 
   constructor () {
     this.authClient = new AuthClient()
@@ -25,5 +27,6 @@ export class MasterClient {
     this.financialCategoryClient = new FinancialCategoryClient()
     this.financialMovementClient = new FinancialMovementClient()
     this.reportClient = new ReportClient()
+    this.dashboardClient = new DashboardClient()
   }
 }
