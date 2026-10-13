@@ -56,6 +56,17 @@ export enum MovementStatusSource {
   Manual = 'manual',
 }
 
+/**
+ * Canal da movimentação (M3, fatia 5). Opcional: ausente, os relatórios usam o
+ * canal efetivo (entrada em plataforma → delivery; outra entrada → dineIn;
+ * saída → shared). `shared` = da casa inteira (aluguel, energia, contador).
+ */
+export enum MovementChannel {
+  DineIn = 'dineIn',
+  Delivery = 'delivery',
+  Shared = 'shared',
+}
+
 export enum CounterpartyKind {
   Client = 'client',
   Supplier = 'supplier',
@@ -125,6 +136,10 @@ const baseMovementSchema = s.object({
   settledAt: s.date().coerce().optional(),
 
   account: accountRefSchema,
+
+  channel: s.type().enum(MovementChannel).optional(),
+  // Extended Reference da subcategoria (cópia do nome, como account/category).
+  subcategory: s.object({ _id: s.string(), name: s.string() }).optional(),
 
   paymentMethod: s.type().enum(PaymentMethod),
 
@@ -208,6 +223,9 @@ export const registerMovementSchema = s.object({
   origin: s.type().enum(MovementOrigin).optional(),
   // Confirmação explícita para persistir uma possível duplicata (<2min).
   confirmDuplicate: s.boolean().optional(),
+  // Fatia 5: subcategoria da categoria escolhida (ativa) e canal, ambos opcionais.
+  subcategoryId: s.string().optional(),
+  channel: s.type().enum(MovementChannel).optional(),
 })
 
 /**
@@ -226,6 +244,8 @@ export const updateMovementSchema = s.object({
   counterparty: counterpartyRequestSchema,
   fiscalNote: s.string(),
   description: s.string().max(500),
+  subcategoryId: s.string(),
+  channel: s.type().enum(MovementChannel),
 }).partial()
 
 /** Corpo de PATCH /financial-movements/:id/status. */

@@ -12,8 +12,11 @@ export {
   CategoryBehavior,
   OperationalNature,
   DreGroup,
+  subcategorySchema,
+  subcategoryInsertSchema,
+  subcategoryUpdateSchema,
 } from './financial-category-schema'
-export type { FinancialCategoryActionResult } from './financial-category-response'
+export type { FinancialCategoryActionResult, Subcategory, SubcategoryRequest } from './financial-category-response'
 
 export { FinancialMovement } from './financial-movement-entity'
 export {
@@ -28,6 +31,7 @@ export {
   PaymentMethod,
   MovementOrigin,
   CounterpartyKind,
+  MovementChannel,
 } from './financial-movement-schema'
 export type {
   RegisterMovementRequest,

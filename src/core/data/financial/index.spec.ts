@@ -9,4 +9,12 @@ describe('barrel de financial', () => {
     expect((root as any).DreGroup?.Cmv).toBe('cmv')
     expect(financial.CategoryBehavior.Mixed).toBe('mixed')
   })
+
+  it('exporta MovementChannel e os schemas de subcategoria', () => {
+    expect(financial.MovementChannel.Shared).toBe('shared')
+    expect((root as any).MovementChannel?.Delivery).toBe('delivery')
+    expect(financial.subcategorySchema).toBeDefined()
+    expect(financial.subcategoryInsertSchema).toBeDefined()
+    expect(financial.subcategoryUpdateSchema).toBeDefined()
+  })
 })
