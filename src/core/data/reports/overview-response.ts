@@ -5,9 +5,9 @@
  * MintlyApi/specs/modulos-novos/20261013/visao-geral.md.
  */
 
-/** `month` em AAAA-MM (padrão: mês corrente). Os blocos de caixa são sempre de hoje. */
 import type { ReportComparison } from './result-response'
 
+/** `month` em AAAA-MM (padrão: mês corrente). Os blocos de caixa são sempre de hoje. */
 export interface OverviewQuery {
   month?: string
 }
