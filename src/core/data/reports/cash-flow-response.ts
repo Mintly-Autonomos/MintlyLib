@@ -41,6 +41,10 @@ export interface DueItem {
   overdue: boolean
   /** Só em liquidada: quando o dinheiro mexeu. */
   settledAt?: string
+  /** `platformPayout`: pedidos de uma conta de plataforma agrupados por data de repasse. */
+  kind?: 'movement' | 'platformPayout'
+  /** Quantos lançamentos o item representa (1 em `movement`). */
+  itemCount?: number
 }
 
 /** Primeiro dia da projeção com saldo abaixo da margem de segurança. */

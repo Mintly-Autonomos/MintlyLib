@@ -36,4 +36,15 @@ describe('barrel de reports', () => {
     const query: reports.OverviewQuery = { month: '2026-07' }
     expect([pillar.key, insight.kind, label, query.month]).toEqual(['runway', 'breakEvenReached', 'noData', '2026-07'])
   })
+
+  it('exporta os tipos dos ajustes (comparação, insights com base, repasses)', () => {
+    const comparison: reports.ReportComparison = { kind: 'samePeriod', untilDay: 13 }
+    const insight: reports.OverviewInsight = { kind: 'cmvAboveTarget', severity: 'warning', pct: 0.4, targetMax: 0.35, impact: 100, basisMonth: '2026-09' }
+    const due: reports.DueItem = { id: 'payout:a:2026-10-22:pending', title: 'Repasse iFood', category: { _id: '', name: 'Repasse de plataforma' }, direction: 'in' as any, amount: 10, dueDate: '2026-10-22', status: 'pending' as any, overdue: false, kind: 'platformPayout', itemCount: 3 }
+    const r = {} as reports.ResultReport
+    const e = {} as reports.ExpensesReport
+    const o = {} as reports.OverviewReport
+    const pick: Array<reports.ReportComparison | undefined> = [r.comparison, e.comparison, o.comparison]
+    expect([comparison.untilDay, insight.kind, due.kind, pick.length]).toEqual([13, 'cmvAboveTarget', 'platformPayout', 3])
+  })
 })

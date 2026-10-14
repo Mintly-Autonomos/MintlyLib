@@ -1,5 +1,6 @@
 import type { CategoryBehavior, DreGroup } from '../financial/financial-category-schema'
 import type { MovementChannel } from '../financial/financial-movement-schema'
+import type { ReportComparison } from './result-response'
 
 /**
  * Contrato de GET /reports/expenses (fatia 6). Por competência; número cru;
@@ -126,4 +127,6 @@ export interface ExpensesReport {
   /** Só quando o mês de referência é o mês atual. */
   projection: ExpensesProjection | null
   anomalyRule: ExpensesAnomalyRule
+  /** Base de `previous`/`average3` e das variações (mesmo período no mês atual). */
+  comparison: ReportComparison
 }
