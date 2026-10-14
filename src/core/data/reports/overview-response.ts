@@ -6,6 +6,8 @@
  */
 
 /** `month` em AAAA-MM (padrão: mês corrente). Os blocos de caixa são sempre de hoje. */
+import type { ReportComparison } from './result-response'
+
 export interface OverviewQuery {
   month?: string
 }
@@ -45,8 +47,9 @@ export interface OverviewHealth {
 
 export type OverviewInsight =
   | { kind: 'cashTight'; severity: 'warning'; date: string; balance: number }
-  | { kind: 'cmvAboveTarget'; severity: 'warning'; pct: number; targetMax: number; impact: number }
-  | { kind: 'primeCostAboveTarget'; severity: 'warning'; pct: number; targetMax: number }
+  /** `basisMonth`: mês avaliado — no mês atual, o último mês fechado (mesma base do score). */
+  | { kind: 'cmvAboveTarget'; severity: 'warning'; pct: number; targetMax: number; impact: number; basisMonth: string }
+  | { kind: 'primeCostAboveTarget'; severity: 'warning'; pct: number; targetMax: number; basisMonth: string }
   | { kind: 'expenseAnomaly'; severity: 'warning'; name: string; categoryName: string; excess: number; pctAbove: number }
   | { kind: 'breakEvenReached'; severity: 'positive'; day: number }
   | { kind: 'taxRegimeNotConfigured'; severity: 'info' }
@@ -77,4 +80,6 @@ export interface OverviewReport {
   insights: OverviewInsight[]
   revenueVsExpense: RevenueVsExpensePoint[]
   profitWaterfall: ProfitWaterfall
+  /** Base das variações dos cards (mesmo período no mês atual). */
+  comparison: ReportComparison
 }

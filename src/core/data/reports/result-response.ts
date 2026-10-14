@@ -7,6 +7,16 @@ import type { TaxRegime } from '../restaurant/restaurant-schema'
  * MintlyApi/specs/modulos-novos/20261012/resultado-dre.md.
  */
 
+/**
+ * Base das comparações (ajustes, item 1). No mês atual (`samePeriod`) "vs. mês
+ * anterior" e "vs. média" usam os mesmos dias (1..`untilDay`) dos meses
+ * anteriores; mês fechado (`fullMonth`) compara meses cheios.
+ */
+export interface ReportComparison {
+  kind: 'samePeriod' | 'fullMonth'
+  untilDay: number | null
+}
+
 /** `month` em AAAA-MM; padrão o mês corrente no servidor. */
 export interface ResultQuery {
   month?: string
@@ -70,4 +80,5 @@ export interface ResultReport {
   breakEven: ResultBreakEven
   history: ResultHistoryPoint[]
   insights: ResultInsight[]
+  comparison: ReportComparison
 }
