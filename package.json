@@ -48,7 +48,7 @@
   "devDependencies": {
     "@types/http-status-codes": "^1.2.0",
     "@types/jest": "^30.0.0",
-    "@types/node": "^20.11.5",
+    "@types/node": "^24.19.2",
     "@typescript-eslint/eslint-plugin": "6.4.0",
     "dotenv": "^16.4.5",
     "eslint": "8.0.1",
