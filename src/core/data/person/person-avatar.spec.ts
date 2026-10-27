@@ -1,4 +1,4 @@
-import { avatarSchema, AVATAR_MAX_BYTES, AVATAR_MAX_DATA_URL_LENGTH } from './person-avatar'
+import { avatarSchema, updateAvatarRequestSchema, AVATAR_MAX_BYTES, AVATAR_MAX_DATA_URL_LENGTH } from './person-avatar'
 import { personSchema } from './person-schema'
 import { signupRequestSchema } from '../auth/signup-schema'
 
@@ -39,5 +39,21 @@ describe('Person / signup com avatar', () => {
     const base = { email: 'ana@exemplo.com', password: 'Senha123', restaurantName: 'Cantina', termsAccepted: true }
     expect(signupRequestSchema.safeParse({ ...base, person: { name: 'Ana', phone: '11999999999', avatar: PNG } }).success).toBe(true)
     expect(signupRequestSchema.safeParse({ ...base, person: { name: 'Ana', phone: '11999999999' } }).success).toBe(true)
+  })
+})
+
+describe('updateAvatarRequestSchema (PUT /people/me/avatar)', () => {
+  it('aceita só { avatar } com data URL válida', () => {
+    expect(updateAvatarRequestSchema.safeParse({ avatar: PNG }).success).toBe(true)
+  })
+
+  it('exige o avatar e rejeita o que não é imagem', () => {
+    expect(updateAvatarRequestSchema.safeParse({}).success).toBe(false)
+    expect(updateAvatarRequestSchema.safeParse({ avatar: 'oi' }).success).toBe(false)
+    expect(updateAvatarRequestSchema.safeParse({ avatar: null }).success).toBe(false)
+  })
+
+  it('é estrito: campo desconhecido é rejeitado', () => {
+    expect(updateAvatarRequestSchema.safeParse({ avatar: PNG, name: 'Outro' }).success).toBe(false)
   })
 })

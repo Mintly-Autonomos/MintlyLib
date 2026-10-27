@@ -3,7 +3,7 @@ import { HttpBaseClient } from '../core/client/http-base-client'
 import type { ResponseDto } from '../core/data/request/response'
 import type { Headers } from '../core/data/request/headers'
 import type { Person } from '../core/data/person/person-entity'
-import type { PersonAvatarResult } from '../core/data/person/person-avatar'
+import type { PersonAvatarResult, UpdateAvatarRequest } from '../core/data/person/person-avatar'
 
 export class PersonClient extends HttpBaseClient<Person> {
   constructor () {
@@ -19,6 +19,18 @@ export class PersonClient extends HttpBaseClient<Person> {
       `/avatar/${encodeURIComponent(username)}`,
       withHeaders(headers),
     )
+    return response.data
+  }
+
+  /** Troca a foto de perfil do usuário autenticado (data URL JPG/PNG/WebP, até 1 MB). */
+  async updateMyAvatar (body: UpdateAvatarRequest, headers: Headers): Promise<ResponseDto<PersonAvatarResult>> {
+    const response = await this.connection.put<ResponseDto<PersonAvatarResult>>('/me/avatar', body, withHeaders(headers))
+    return response.data
+  }
+
+  /** Remove a foto de perfil do usuário autenticado (volta pras iniciais). */
+  async removeMyAvatar (headers: Headers): Promise<ResponseDto<PersonAvatarResult>> {
+    const response = await this.connection.delete<ResponseDto<PersonAvatarResult>>('/me/avatar', withHeaders(headers))
     return response.data
   }
 }

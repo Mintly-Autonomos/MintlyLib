@@ -1,4 +1,5 @@
 import { Sapphire } from '@ascendance-hub/sapphire-core'
+import type { Infer } from '@ascendance-hub/sapphire-core'
 
 const s = new Sapphire()
 
@@ -25,7 +26,15 @@ export const avatarSchema = s.string()
     { message: 'A foto de perfil deve ser uma imagem JPG, PNG ou WebP.' },
   )
 
-/** Resposta de `GET /people/avatar/:username`. `avatar` é `null` quando a pessoa não tem foto. */
+/**
+ * Corpo de `PUT /people/me/avatar` (troca a foto do usuário autenticado). Objeto estrito:
+ * qualquer outro campo é rejeitado (mass assignment). Para remover a foto: `DELETE`.
+ */
+export const updateAvatarRequestSchema = s.object({ avatar: avatarSchema })
+
+export type UpdateAvatarRequest = Infer<typeof updateAvatarRequestSchema>
+
+/** Resposta de `GET /people/avatar/:username`, `PUT` e `DELETE /people/me/avatar`. `avatar` é `null` quando a pessoa não tem foto. */
 export interface PersonAvatarResult {
   avatar: string | null
 }
