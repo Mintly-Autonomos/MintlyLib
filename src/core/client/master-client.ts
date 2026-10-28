@@ -5,6 +5,7 @@ import {
   FinancialAccountClient,
   FinancialCategoryClient,
   FinancialMovementClient,
+  MenuItemClient,
   ReportClient,
   DashboardClient,
 } from '../../clients'
@@ -16,6 +17,7 @@ export class MasterClient {
   financialAccountClient: FinancialAccountClient
   financialCategoryClient: FinancialCategoryClient
   financialMovementClient: FinancialMovementClient
+  menuItemClient: MenuItemClient
   reportClient: ReportClient
   dashboardClient: DashboardClient
 
@@ -26,6 +28,7 @@ export class MasterClient {
     this.financialAccountClient = new FinancialAccountClient()
     this.financialCategoryClient = new FinancialCategoryClient()
     this.financialMovementClient = new FinancialMovementClient()
+    this.menuItemClient = new MenuItemClient()
     this.reportClient = new ReportClient()
     this.dashboardClient = new DashboardClient()
   }
