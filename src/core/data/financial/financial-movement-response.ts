@@ -37,6 +37,11 @@ export interface RegisterMovementRequest {
   /** Subcategoria da categoria escolhida; tem que estar ativa. */
   subcategoryId?: string
   channel?: MovementChannel
+  /**
+   * Vencimento (`AAAA-MM-DD`): o dia em que o dinheiro entra/sai. Ausente = à vista (nasce
+   * liquidado). Em conta de plataforma o servidor calcula (`date` + prazo) se não vier.
+   */
+  dueDate?: string | Date
 }
 
 /**
@@ -65,6 +70,8 @@ export interface UpdateMovementRequest {
   subcategoryId?: string | null
   /** `null` limpa (volta ao canal efetivo). */
   channel?: MovementChannel | null
+  /** `null` limpa o vencimento (vira à vista); a API valida o documento resultante. */
+  dueDate?: string | Date | null
 }
 
 /** Filtros de GET /financial-movements. */
