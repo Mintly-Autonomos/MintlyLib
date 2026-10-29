@@ -49,6 +49,14 @@ jobs:
     # Roda apenas quando o PR é mergeado (não em push direto)
     if: github.event.pull_request.merged == true
 
+    # Um bump por vez em cada branch base. Dois PRs mergeados em sequência rodavam em paralelo,
+    # ambos calculavam a mesma próxima versão a partir da mesma base: o primeiro criava a tag
+    # (vX.Y.Z-preview), o push do commit era recusado (a branch já tinha andado) e o segundo
+    # falhava com "tag already exists". Em fila, o segundo faz checkout já com o bump do primeiro.
+    concurrency:
+      group: mintlylib-version-${{ github.event.pull_request.base.ref }}
+      cancel-in-progress: false
+
     permissions:
       contents: write
 
