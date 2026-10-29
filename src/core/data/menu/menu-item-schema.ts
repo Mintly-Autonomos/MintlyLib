@@ -22,6 +22,10 @@ export const menuItemSchema = s.object({
   /** Grupo livre do cardápio (Frango, Bebidas…). */
   category: s.string().max(40).optional(),
   price: s.number().min(0),
+  /** Custo unitário do prato (ingredientes e embalagem). Base da margem na análise de cardápio. */
+  cost: s.number().min(0).default(0),
+  /** Quantas unidades saem por mês, informado pelo dono. Base da popularidade na análise de cardápio. */
+  soldPerMonth: s.number().int().min(0).default(0),
   status: s.type().enum(RecordStatus),
   /** Última vez que o VALOR mudou (ou o cadastro, se nunca mudou). */
   priceUpdatedAt: s.date().coerce(),
@@ -35,12 +39,16 @@ export const menuItemInsertSchema = s.object({
   name: s.string().max(80),
   price: s.number().min(0),
   category: s.string().max(40).optional(),
+  cost: s.number().min(0).optional(),
+  soldPerMonth: s.number().int().min(0).optional(),
 })
 
-/** Corpo de PATCH /menu-items/:id — só dados de cadastro; preço tem rota própria. */
+/** Corpo de PATCH /menu-items/:id — dados de cadastro, custo e vendidos; preço tem rota própria. */
 export const menuItemUpdateSchema = s.object({
   name: s.string().max(80),
   category: s.string().max(40),
+  cost: s.number().min(0),
+  soldPerMonth: s.number().int().min(0),
 }).partial()
 
 /** Corpo de PATCH /menu-items/:id/price. */
