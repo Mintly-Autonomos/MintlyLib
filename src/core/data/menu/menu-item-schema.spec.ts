@@ -15,6 +15,8 @@ const baseItem = {
   name: 'Frango Yangnyeom',
   category: 'Frango',
   price: 38,
+  cost: 14,
+  soldPerMonth: 420,
   status: RecordStatus.Active,
   priceUpdatedAt: at,
   priceReviewedAt: at,
@@ -43,6 +45,22 @@ describe('menuItemSchema', () => {
   })
 })
 
+describe('custo e vendidos por mês', () => {
+  it('custo e vendidos entram no prato; sem eles valem 0', () => {
+    const { cost, soldPerMonth, ...semDados } = baseItem
+    expect([cost, soldPerMonth]).toEqual([14, 420])
+    const result = menuItemSchema.safeParse(semDados)
+    expect(result.success).toBe(true)
+    if (result.success) expect([result.data.cost, result.data.soldPerMonth]).toEqual([0, 0])
+  })
+
+  it('custo não pode ser negativo e vendidos precisa ser inteiro não negativo', () => {
+    expect(menuItemSchema.safeParse({ ...baseItem, cost: -1 }).success).toBe(false)
+    expect(menuItemSchema.safeParse({ ...baseItem, soldPerMonth: -3 }).success).toBe(false)
+    expect(menuItemSchema.safeParse({ ...baseItem, soldPerMonth: 10.5 }).success).toBe(false)
+  })
+})
+
 describe('menuItemInsertSchema', () => {
   it('exige nome e preço; datas, status e restaurante ficam por conta do servidor', () => {
     expect(menuItemInsertSchema.safeParse({ name: 'Soju', price: 25 }).success).toBe(true)
@@ -57,8 +75,10 @@ describe('menuItemInsertSchema', () => {
 })
 
 describe('menuItemUpdateSchema', () => {
-  it('só nome/categoria, parciais; preço fica de fora (rota própria)', () => {
+  it('nome, categoria, custo e vendidos, parciais; preço fica de fora (rota própria)', () => {
     expect(menuItemUpdateSchema.safeParse({ name: 'Novo' }).success).toBe(true)
+    expect(menuItemUpdateSchema.safeParse({ cost: 12.5, soldPerMonth: 300 }).success).toBe(true)
+    expect(menuItemUpdateSchema.safeParse({ cost: -1 }).success).toBe(false)
     expect(menuItemUpdateSchema.safeParse({}).success).toBe(true)
     expect(menuItemUpdateSchema.safeParse({ price: 10 }).success).toBe(false)
   })
