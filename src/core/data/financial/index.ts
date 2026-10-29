@@ -1,6 +1,17 @@
 export { FinancialAccount } from './financial-account-entity'
 export { financialAccountSchema, financialAccountInsertSchema, FinancialAccountType } from './financial-account-schema'
 export { financialAccountUpdateSchema } from './financial-account-schema'
+export {
+  importMovementRowSchema,
+  importMovementsSchema,
+  IMPORT_MOVEMENTS_MAX_ROWS,
+} from './financial-movement-import'
+export type {
+  ImportMovementRow,
+  ImportMovementsRequest,
+  ImportMovementRowResult,
+  ImportMovementsResult,
+} from './financial-movement-import'
 export type { FinancialAccountActionResult, InactivateFinancialAccountRequest } from './financial-account-response'
 
 export { FinancialCategory } from './financial-category-entity'

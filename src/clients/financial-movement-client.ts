@@ -3,6 +3,7 @@ import { HttpBaseClient } from '../core/client/http-base-client'
 import type { Headers } from '../core/data/request/headers'
 import type { MovementStatus } from '../core/data/financial/financial-movement-schema'
 import type { FinancialMovement } from '../core/data/financial/financial-movement-entity'
+import type { ImportMovementsRequest, ImportMovementsResult } from '../core/data/financial/financial-movement-import'
 import type {
   RegisterMovementRequest,
   UpdateMovementRequest,
@@ -24,6 +25,16 @@ export class FinancialMovementClient {
   /** Registra entrada/saída + ajusta saldo (transacional). Resolve 409 de duplicidade com confirmDuplicate. */
   async register (body: RegisterMovementRequest, headers: Headers): Promise<ResponseDto<FinancialMovement>> {
     const response = await this.http.connection.post<ResponseDto<FinancialMovement>>('/', body, withHeaders(headers))
+    return response.data
+  }
+
+  /**
+   * Importa várias movimentações de uma vez (até IMPORT_MOVEMENTS_MAX_ROWS). Cada linha é gravada como
+   * um `register` independente e o resultado vem linha a linha; reenviar a mesma `idempotencyKey`
+   * devolve o resultado guardado, sem duplicar.
+   */
+  async importMovements (body: ImportMovementsRequest, headers: Headers): Promise<ResponseDto<ImportMovementsResult>> {
+    const response = await this.http.connection.post<ResponseDto<ImportMovementsResult>>('/import', body, withHeaders(headers))
     return response.data
   }
 
