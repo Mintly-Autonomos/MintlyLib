@@ -8,6 +8,7 @@ import {
   MenuItemClient,
   ReportClient,
   DashboardClient,
+  SubscriptionClient,
 } from '../../clients'
 
 export class MasterClient {
@@ -20,6 +21,7 @@ export class MasterClient {
   menuItemClient: MenuItemClient
   reportClient: ReportClient
   dashboardClient: DashboardClient
+  subscriptionClient: SubscriptionClient
 
   constructor () {
     this.authClient = new AuthClient()
@@ -31,5 +33,6 @@ export class MasterClient {
     this.menuItemClient = new MenuItemClient()
     this.reportClient = new ReportClient()
     this.dashboardClient = new DashboardClient()
+    this.subscriptionClient = new SubscriptionClient()
   }
 }
