@@ -1,16 +1,19 @@
 import {
   addMonths,
+  applySubscriptionPurchase,
   computeSubscriptionState,
   extendSubscription,
   isSubscriptionPlan,
+  isSubscriptionTier,
   subscriptionCheckoutSchema,
   subscriptionPlanPrice,
   subscriptionPlans,
+  subscriptionTiers,
 } from './subscription'
 
 describe('preços dos planos (R$ 150/mês; 3 meses 5%, 6 meses 10%, 12 meses 15%)', () => {
   it('1 mês: R$ 150,00 sem desconto', () => {
-    expect(subscriptionPlanPrice(1)).toEqual({ months: 1, discountPercent: 0, listCents: 15000, totalCents: 15000, perMonthCents: 15000 })
+    expect(subscriptionPlanPrice(1)).toEqual({ tier: 'basic', months: 1, discountPercent: 0, listCents: 15000, totalCents: 15000, perMonthCents: 15000 })
   })
 
   it('3 meses: 5% → R$ 427,50', () => {
@@ -36,13 +39,54 @@ describe('preços dos planos (R$ 150/mês; 3 meses 5%, 6 meses 10%, 12 meses 15%
   })
 })
 
+describe('preços do Pro (R$ 229/mês, mesmos descontos por quantidade)', () => {
+  it('1 mês: R$ 229,00 sem desconto', () => {
+    expect(subscriptionPlanPrice(1, 'pro')).toEqual({ tier: 'pro', months: 1, discountPercent: 0, listCents: 22900, totalCents: 22900, perMonthCents: 22900 })
+  })
+
+  it('3 meses: 5% → R$ 652,65', () => {
+    expect(subscriptionPlanPrice(3, 'pro')).toMatchObject({ discountPercent: 5, listCents: 68700, totalCents: 65265 })
+  })
+
+  it('6 meses: 10% → R$ 1.236,60', () => {
+    expect(subscriptionPlanPrice(6, 'pro')).toMatchObject({ discountPercent: 10, listCents: 137400, totalCents: 123660 })
+  })
+
+  it('12 meses: 15% → R$ 2.335,80', () => {
+    expect(subscriptionPlanPrice(12, 'pro')).toMatchObject({ discountPercent: 15, listCents: 274800, totalCents: 233580, perMonthCents: 19465 })
+  })
+
+  it('o total é sempre inteiro e o Pro custa mais que o Básico em todos os planos', () => {
+    const pro = subscriptionPlans('pro')
+    const basic = subscriptionPlans('basic')
+    pro.forEach((p, i) => {
+      expect(Number.isInteger(p.totalCents)).toBe(true)
+      expect(p.totalCents).toBeGreaterThan(basic[i]!.totalCents)
+    })
+  })
+
+  it('subscriptionTiers lista Básico e Pro, cada um com os 4 planos', () => {
+    const tiers = subscriptionTiers()
+    expect(tiers.map((t) => [t.tier, t.label, t.monthlyCents])).toEqual([
+      ['basic', 'Básico', 15000],
+      ['pro', 'Pro', 22900],
+    ])
+    tiers.forEach((t) => expect(t.plans.map((p) => p.months)).toEqual([1, 3, 6, 12]))
+  })
+
+  it('isSubscriptionTier só aceita basic e pro', () => {
+    expect(isSubscriptionTier('basic') && isSubscriptionTier('pro')).toBe(true)
+    expect(['premium', 'PRO', null, undefined, 1].some(isSubscriptionTier)).toBe(false)
+  })
+})
+
 describe('computeSubscriptionState', () => {
   const now = new Date('2026-10-30T12:00:00.000Z')
   const inMs = (ms: number) => new Date(now.getTime() + ms)
   const DAY = 24 * 60 * 60 * 1000
 
   it('sem data limite: none (nunca assinou)', () => {
-    expect(computeSubscriptionState(undefined, now)).toEqual({ status: 'none', endsAt: null, daysLeft: null, expiresSoon: false })
+    expect(computeSubscriptionState(undefined, now)).toEqual({ status: 'none', tier: null, endsAt: null, daysLeft: null, expiresSoon: false })
     expect(computeSubscriptionState(null, now).status).toBe('none')
   })
 
@@ -75,7 +119,21 @@ describe('computeSubscriptionState', () => {
 
   it('depois do vencimento: expired, mas guarda a data', () => {
     const end = inMs(-DAY)
-    expect(computeSubscriptionState(end, now)).toEqual({ status: 'expired', endsAt: end.toISOString(), daysLeft: null, expiresSoon: false })
+    expect(computeSubscriptionState(end, now)).toEqual({ status: 'expired', tier: 'basic', endsAt: end.toISOString(), daysLeft: null, expiresSoon: false })
+  })
+
+  it('guarda o tipo: pro fica pro, ativa ou vencida', () => {
+    expect(computeSubscriptionState(inMs(10 * DAY), now, 'pro').tier).toBe('pro')
+    expect(computeSubscriptionState(inMs(-DAY), now, 'pro').tier).toBe('pro')
+  })
+
+  it('conta com data mas sem tipo gravado (liberada à mão) é Básico; tipo inválido também', () => {
+    expect(computeSubscriptionState(inMs(10 * DAY), now).tier).toBe('basic')
+    expect(computeSubscriptionState(inMs(10 * DAY), now, 'premium').tier).toBe('basic')
+  })
+
+  it('sem assinatura não tem tipo, mesmo que alguém passe um', () => {
+    expect(computeSubscriptionState(null, now, 'pro').tier).toBeNull()
   })
 
   it('aceita a data como texto ISO (como vem do JSON)', () => {
@@ -122,9 +180,57 @@ describe('extendSubscription (renovação)', () => {
   })
 })
 
+describe('applySubscriptionPurchase (troca de tipo não dá desconto e conta de hoje)', () => {
+  const now = new Date('2026-10-30T12:00:00.000Z')
+  const in10Days = new Date('2026-11-09T12:00:00.000Z')
+
+  it('mesmo tipo ainda ativo: soma ao que sobrou', () => {
+    const r = applySubscriptionPurchase({ endsAt: in10Days, tier: 'basic' }, { tier: 'basic', months: 1 }, now)
+    expect(r).toMatchObject({ tier: 'basic', replacedActive: false })
+    expect(r.endsAt.toISOString()).toBe('2026-12-09T12:00:00.000Z')
+    expect(r.startedAt.toISOString()).toBe(in10Days.toISOString())
+  })
+
+  it('upgrade com tempo sobrando: o Pro começa HOJE e o que sobrava do Básico não é somado', () => {
+    const r = applySubscriptionPurchase({ endsAt: in10Days, tier: 'basic' }, { tier: 'pro', months: 1 }, now)
+    expect(r).toMatchObject({ tier: 'pro', replacedActive: true })
+    expect(r.endsAt.toISOString()).toBe('2026-11-30T12:00:00.000Z')
+    expect(r.startedAt.toISOString()).toBe(now.toISOString())
+  })
+
+  it('downgrade com tempo sobrando: mesma regra (começa hoje, sem crédito pelo Pro que sobrava)', () => {
+    const r = applySubscriptionPurchase({ endsAt: new Date('2027-03-30T12:00:00Z'), tier: 'pro' }, { tier: 'basic', months: 3 }, now)
+    expect(r).toMatchObject({ tier: 'basic', replacedActive: true })
+    expect(r.endsAt.toISOString()).toBe('2027-01-30T12:00:00.000Z')
+  })
+
+  it('vencida, mesmo mudando de tipo: conta de agora e não há nada descartado', () => {
+    const r = applySubscriptionPurchase({ endsAt: new Date('2026-01-01T00:00:00Z'), tier: 'pro' }, { tier: 'basic', months: 1 }, now)
+    expect(r).toMatchObject({ replacedActive: false })
+    expect(r.endsAt.toISOString()).toBe('2026-11-30T12:00:00.000Z')
+  })
+
+  it('sem assinatura: conta de agora', () => {
+    const r = applySubscriptionPurchase({}, { tier: 'pro', months: 6 }, now)
+    expect(r).toMatchObject({ tier: 'pro', replacedActive: false })
+    expect(r.endsAt.toISOString()).toBe('2027-04-30T12:00:00.000Z')
+  })
+
+  it('conta ativa sem tipo gravado conta como Básico: renovar Básico soma, comprar Pro troca', () => {
+    expect(applySubscriptionPurchase({ endsAt: in10Days }, { tier: 'basic', months: 1 }, now).replacedActive).toBe(false)
+    expect(applySubscriptionPurchase({ endsAt: in10Days }, { tier: 'pro', months: 1 }, now).replacedActive).toBe(true)
+  })
+})
+
 describe('subscriptionCheckoutSchema', () => {
   it('aceita um número inteiro de meses', () => {
     expect(() => subscriptionCheckoutSchema.parse({ months: 3 })).not.toThrow()
+  })
+
+  it('o tipo é opcional e só aceita basic ou pro', () => {
+    expect(() => subscriptionCheckoutSchema.parse({ months: 3, tier: 'pro' })).not.toThrow()
+    expect(() => subscriptionCheckoutSchema.parse({ months: 3, tier: 'basic' })).not.toThrow()
+    expect(() => subscriptionCheckoutSchema.parse({ months: 3, tier: 'premium' })).toThrow()
   })
 
   it('recusa o que não é número inteiro ou está fora da faixa', () => {
