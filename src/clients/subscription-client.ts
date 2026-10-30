@@ -2,6 +2,7 @@ import { ResponseDto, withHeaders } from '../core'
 import { HttpBaseClient } from '../core/client/http-base-client'
 import type { Headers } from '../core/data/request/headers'
 import type {
+  SubscriptionCancelRenewalResponse,
   SubscriptionCheckoutRequest,
   SubscriptionCheckoutResponse,
   SubscriptionMockDecision,
@@ -25,6 +26,18 @@ export class SubscriptionClient {
   /** Cria a cobrança do plano e devolve para onde levar a pessoa pagar. */
   async checkout (body: SubscriptionCheckoutRequest, headers: Headers): Promise<ResponseDto<SubscriptionCheckoutResponse>> {
     const response = await this.http.connection.post<ResponseDto<SubscriptionCheckoutResponse>>('/checkout', body, withHeaders(headers))
+    return response.data
+  }
+
+  /** Cancela a renovação automática. O acesso continua até a data já paga; só deixa de cobrar de novo. */
+  async cancelRenewal (headers: Headers): Promise<ResponseDto<SubscriptionCancelRenewalResponse>> {
+    const response = await this.http.connection.post<ResponseDto<SubscriptionCancelRenewalResponse>>('/cancel-renewal', undefined, withHeaders(headers))
+    return response.data
+  }
+
+  /** Só com o provedor simulado: simula a próxima cobrança da renovação automática (aprovada). */
+  async mockChargeNext (headers: Headers): Promise<ResponseDto<{ status: string }>> {
+    const response = await this.http.connection.post<ResponseDto<{ status: string }>>('/mock/charge-next', undefined, withHeaders(headers))
     return response.data
   }
 

@@ -214,6 +214,13 @@ describe('subscriptionCheckoutSchema', () => {
     expect(() => subscriptionCheckoutSchema.parse({ months: 3 })).not.toThrow()
   })
 
+  it('autoRenew é opcional e só aceita verdadeiro/falso', () => {
+    expect(() => subscriptionCheckoutSchema.parse({ months: 3, autoRenew: true })).not.toThrow()
+    expect(() => subscriptionCheckoutSchema.parse({ months: 3, autoRenew: false })).not.toThrow()
+    expect(() => subscriptionCheckoutSchema.parse({ months: 3 })).not.toThrow()
+    expect(() => subscriptionCheckoutSchema.parse({ months: 3, autoRenew: 'sim' })).toThrow()
+  })
+
   it('o tipo é opcional e só aceita basic ou pro', () => {
     expect(() => subscriptionCheckoutSchema.parse({ months: 3, tier: 'pro' })).not.toThrow()
     expect(() => subscriptionCheckoutSchema.parse({ months: 3, tier: 'basic' })).not.toThrow()

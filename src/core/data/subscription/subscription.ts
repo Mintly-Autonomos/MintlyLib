@@ -184,12 +184,32 @@ export function applySubscriptionPurchase (
 export const subscriptionCheckoutSchema = s.object({
   months: s.number().int().min(1).max(12),
   tier: s.type().enum([...SUBSCRIPTION_TIERS]).optional(),
+  autoRenew: s.boolean().optional(),
 })
 
 export interface SubscriptionCheckoutRequest {
   months: SubscriptionPlanMonths
   /** Omitido = Básico. */
   tier?: SubscriptionTier
+  /**
+   * Renovação automática: o provedor cobra de novo a cada ciclo do plano (30, 90, 180 ou 360 dias) no mesmo
+   * cartão, e cada cobrança aprovada soma os dias do plano. Omitido = pagamento único.
+   */
+  autoRenew?: boolean
+}
+
+/** Estado da renovação automática no provedor. */
+export type SubscriptionRecurringStatus = 'pending' | 'authorized' | 'paused' | 'cancelled'
+
+/** Renovação automática da assinatura (`null` na resposta = sem renovação). */
+export interface SubscriptionRecurring {
+  status: SubscriptionRecurringStatus
+  tier: SubscriptionTier
+  months: SubscriptionPlanMonths
+  /** Dias entre as cobranças (30, 90, 180 ou 360). */
+  days: number
+  /** Quando a renovação foi autorizada (ISO). */
+  startedAt: string | null
 }
 
 export interface SubscriptionCheckoutResponse {
@@ -201,6 +221,8 @@ export interface SubscriptionCheckoutResponse {
   tier: SubscriptionTier
   months: SubscriptionPlanMonths
   totalCents: number
+  /** A cobrança é uma renovação automática (assinatura no provedor), não um pagamento único. */
+  autoRenew: boolean
 }
 
 /** Resposta de GET /subscription: estado + o que o front precisa para montar a tela. */
@@ -208,6 +230,13 @@ export interface SubscriptionOverview extends SubscriptionState {
   /** Cada tipo à venda com seus planos de 1, 3, 6 e 12 meses. */
   tiers: SubscriptionTierOption[]
   provider: PaymentProviderName
+  /** Renovação automática da conta; `null` quando nunca houve. Cancelada continua listada (o acesso vale até a data). */
+  recurring: SubscriptionRecurring | null
+}
+
+/** Resposta de POST /subscription/cancel-renewal. */
+export interface SubscriptionCancelRenewalResponse {
+  status: SubscriptionRecurringStatus
 }
 
 /** Corpo de POST /subscription/mock/decide (só existe com o provedor simulado). */
