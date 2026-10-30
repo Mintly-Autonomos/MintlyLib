@@ -18,6 +18,17 @@ export const SUBSCRIPTION_TIER_LABEL: Record<SubscriptionTier, string> = {
   pro: 'Pro',
 }
 
+/**
+ * Dias de acesso de cada plano. Dias FIXOS, não meses de calendário: 1 mês = 30 dias, 3 = 90, 6 = 180 e
+ * 12 = 360. Assim o prazo de cada plano é sempre o mesmo, em qualquer época do ano.
+ */
+export const SUBSCRIPTION_PLAN_DAYS: Record<SubscriptionPlanMonths, number> = {
+  1: 30,
+  3: 90,
+  6: 180,
+  12: 360,
+}
+
 /** Valor base de um mês de cada tipo, em centavos (Básico R$ 150,00; Pro R$ 229,00). Dinheiro sempre em centavos inteiros. */
 export const SUBSCRIPTION_MONTHLY_PRICE_CENTS: Record<SubscriptionTier, number> = {
   basic: 15000,
@@ -51,6 +62,8 @@ export function isSubscriptionTier (tier: unknown): tier is SubscriptionTier {
 export interface SubscriptionPlanOption {
   tier: SubscriptionTier
   months: SubscriptionPlanMonths
+  /** Dias de acesso que o plano dá (30, 90, 180 ou 360). */
+  days: number
   discountPercent: number
   /** Valor sem desconto (meses × base do tipo). */
   listCents: number
@@ -65,7 +78,7 @@ export function subscriptionPlanPrice (months: SubscriptionPlanMonths, tier: Sub
   const discountPercent = SUBSCRIPTION_DISCOUNT_PERCENT[months]
   const listCents = months * SUBSCRIPTION_MONTHLY_PRICE_CENTS[tier]
   const totalCents = Math.round((listCents * (100 - discountPercent)) / 100)
-  return { tier, months, discountPercent, listCents, totalCents, perMonthCents: Math.round(totalCents / months) }
+  return { tier, months, days: SUBSCRIPTION_PLAN_DAYS[months], discountPercent, listCents, totalCents, perMonthCents: Math.round(totalCents / months) }
 }
 
 export function subscriptionPlans (tier: SubscriptionTier = DEFAULT_SUBSCRIPTION_TIER): SubscriptionPlanOption[] {
@@ -129,30 +142,16 @@ export function computeSubscriptionState (
   return { status: 'active', tier: resolvedTier, endsAt: iso, daysLeft, expiresSoon: daysLeft <= SUBSCRIPTION_EXPIRY_WARNING_DAYS }
 }
 
-/** Soma meses de calendário a uma data (31/jan + 1 mês = 28 ou 29/fev: não vaza para março). */
-export function addMonths (date: Date, months: number): Date {
-  const d = new Date(date.getTime())
-  const day = d.getUTCDate()
-  d.setUTCDate(1)
-  d.setUTCMonth(d.getUTCMonth() + months)
-  const lastDay = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 0)).getUTCDate()
-  d.setUTCDate(Math.min(day, lastDay))
-  return d
-}
-
-/**
- * Nova data limite após um pagamento aprovado. Renovar antes de vencer SOMA ao que sobrou (quem paga
- * adiantado não perde dias); vencida ou sem assinatura, conta a partir de agora.
- */
-export function extendSubscription (currentEndsAt: Date | null | undefined, months: number, now: Date = new Date()): Date {
-  const base = currentEndsAt && currentEndsAt.getTime() > now.getTime() ? currentEndsAt : now
-  return addMonths(base, months)
+/** Soma dias corridos (24h cada) a uma data. */
+export function addDays (date: Date, days: number): Date {
+  return new Date(date.getTime() + days * DAY_MS)
 }
 
 /**
  * Resultado de um pagamento aprovado. Mesmo tipo e ainda ativa: SOMA ao que sobrou. Tipo diferente
  * (upgrade OU downgrade): sem desconto nem crédito pelo que sobrou, e o novo tipo começa a contar
- * HOJE (não quando o outro acabaria). Vencida ou sem assinatura: conta a partir de agora.
+ * HOJE (não quando o outro acabaria). Vencida ou sem assinatura: conta a partir de agora. O tempo
+ * comprado é o do plano em dias fixos (30, 90, 180 ou 360).
  */
 export interface SubscriptionPurchaseResult {
   endsAt: Date
@@ -165,7 +164,7 @@ export interface SubscriptionPurchaseResult {
 
 export function applySubscriptionPurchase (
   current: { endsAt?: Date | null, tier?: unknown },
-  purchase: { tier: SubscriptionTier, months: number },
+  purchase: { tier: SubscriptionTier, months: SubscriptionPlanMonths },
   now: Date = new Date(),
 ): SubscriptionPurchaseResult {
   const currentEnd = current.endsAt ?? null
@@ -174,7 +173,7 @@ export function applySubscriptionPurchase (
   const keepsRemaining = active && currentTier === purchase.tier
   const startedAt = keepsRemaining ? currentEnd : now
   return {
-    endsAt: addMonths(startedAt, purchase.months),
+    endsAt: addDays(startedAt, SUBSCRIPTION_PLAN_DAYS[purchase.months]),
     tier: purchase.tier,
     replacedActive: active && !keepsRemaining,
     startedAt,

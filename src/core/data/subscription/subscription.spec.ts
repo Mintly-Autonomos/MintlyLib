@@ -1,8 +1,8 @@
 import {
-  addMonths,
+  SUBSCRIPTION_PLAN_DAYS,
+  addDays,
   applySubscriptionPurchase,
   computeSubscriptionState,
-  extendSubscription,
   isSubscriptionPlan,
   isSubscriptionTier,
   subscriptionCheckoutSchema,
@@ -13,7 +13,7 @@ import {
 
 describe('preços dos planos (R$ 150/mês; 3 meses 5%, 6 meses 10%, 12 meses 15%)', () => {
   it('1 mês: R$ 150,00 sem desconto', () => {
-    expect(subscriptionPlanPrice(1)).toEqual({ tier: 'basic', months: 1, discountPercent: 0, listCents: 15000, totalCents: 15000, perMonthCents: 15000 })
+    expect(subscriptionPlanPrice(1)).toEqual({ tier: 'basic', months: 1, days: 30, discountPercent: 0, listCents: 15000, totalCents: 15000, perMonthCents: 15000 })
   })
 
   it('3 meses: 5% → R$ 427,50', () => {
@@ -41,7 +41,7 @@ describe('preços dos planos (R$ 150/mês; 3 meses 5%, 6 meses 10%, 12 meses 15%
 
 describe('preços do Pro (R$ 229/mês, mesmos descontos por quantidade)', () => {
   it('1 mês: R$ 229,00 sem desconto', () => {
-    expect(subscriptionPlanPrice(1, 'pro')).toEqual({ tier: 'pro', months: 1, discountPercent: 0, listCents: 22900, totalCents: 22900, perMonthCents: 22900 })
+    expect(subscriptionPlanPrice(1, 'pro')).toEqual({ tier: 'pro', months: 1, days: 30, discountPercent: 0, listCents: 22900, totalCents: 22900, perMonthCents: 22900 })
   })
 
   it('3 meses: 5% → R$ 652,65', () => {
@@ -141,42 +141,29 @@ describe('computeSubscriptionState', () => {
   })
 })
 
-describe('addMonths', () => {
-  it('soma meses de calendário', () => {
-    expect(addMonths(new Date('2026-10-30T10:00:00Z'), 1).toISOString()).toBe('2026-11-30T10:00:00.000Z')
-    expect(addMonths(new Date('2026-10-30T10:00:00Z'), 12).toISOString()).toBe('2027-10-30T10:00:00.000Z')
+describe('dias de cada plano (dias fixos, não meses de calendário)', () => {
+  it('1 mês = 30 dias, 3 = 90, 6 = 180 e 12 = 360', () => {
+    expect(SUBSCRIPTION_PLAN_DAYS).toEqual({ 1: 30, 3: 90, 6: 180, 12: 360 })
+    expect(subscriptionPlans('basic').map((p) => p.days)).toEqual([30, 90, 180, 360])
+    expect(subscriptionPlans('pro').map((p) => p.days)).toEqual([30, 90, 180, 360])
+  })
+})
+
+describe('addDays', () => {
+  it('soma dias corridos de 24h', () => {
+    expect(addDays(new Date('2026-10-30T10:00:00Z'), 30).toISOString()).toBe('2026-11-29T10:00:00.000Z')
+    expect(addDays(new Date('2026-10-30T10:00:00Z'), 360).toISOString()).toBe('2027-10-25T10:00:00.000Z')
   })
 
-  it('31/jan + 1 mês cai no fim de fevereiro, não em março', () => {
-    expect(addMonths(new Date('2026-01-31T00:00:00Z'), 1).toISOString()).toBe('2026-02-28T00:00:00.000Z')
-    expect(addMonths(new Date('2028-01-31T00:00:00Z'), 1).toISOString()).toBe('2028-02-29T00:00:00.000Z')
-  })
-
-  it('vira o ano', () => {
-    expect(addMonths(new Date('2026-11-15T00:00:00Z'), 3).toISOString()).toBe('2027-02-15T00:00:00.000Z')
+  it('cruza fim de mês e de ano sem depender do calendário', () => {
+    expect(addDays(new Date('2026-01-31T00:00:00Z'), 30).toISOString()).toBe('2026-03-02T00:00:00.000Z')
+    expect(addDays(new Date('2026-12-20T00:00:00Z'), 30).toISOString()).toBe('2027-01-19T00:00:00.000Z')
   })
 
   it('não altera a data recebida', () => {
     const d = new Date('2026-10-30T00:00:00Z')
-    addMonths(d, 6)
+    addDays(d, 90)
     expect(d.toISOString()).toBe('2026-10-30T00:00:00.000Z')
-  })
-})
-
-describe('extendSubscription (renovação)', () => {
-  const now = new Date('2026-10-30T12:00:00.000Z')
-
-  it('sem assinatura: conta a partir de agora', () => {
-    expect(extendSubscription(undefined, 1, now).toISOString()).toBe('2026-11-30T12:00:00.000Z')
-    expect(extendSubscription(null, 3, now).toISOString()).toBe('2027-01-30T12:00:00.000Z')
-  })
-
-  it('vencida: conta a partir de agora, não da data antiga', () => {
-    expect(extendSubscription(new Date('2026-01-01T00:00:00Z'), 1, now).toISOString()).toBe('2026-11-30T12:00:00.000Z')
-  })
-
-  it('ainda ativa: SOMA ao que sobrou (quem renova adiantado não perde dias)', () => {
-    expect(extendSubscription(new Date('2026-11-10T12:00:00Z'), 1, now).toISOString()).toBe('2026-12-10T12:00:00.000Z')
   })
 })
 
@@ -187,33 +174,33 @@ describe('applySubscriptionPurchase (troca de tipo não dá desconto e conta de 
   it('mesmo tipo ainda ativo: soma ao que sobrou', () => {
     const r = applySubscriptionPurchase({ endsAt: in10Days, tier: 'basic' }, { tier: 'basic', months: 1 }, now)
     expect(r).toMatchObject({ tier: 'basic', replacedActive: false })
-    expect(r.endsAt.toISOString()).toBe('2026-12-09T12:00:00.000Z')
+    expect(r.endsAt.toISOString()).toBe('2026-12-09T12:00:00.000Z') // 10 dias que sobravam + 30
     expect(r.startedAt.toISOString()).toBe(in10Days.toISOString())
   })
 
   it('upgrade com tempo sobrando: o Pro começa HOJE e o que sobrava do Básico não é somado', () => {
     const r = applySubscriptionPurchase({ endsAt: in10Days, tier: 'basic' }, { tier: 'pro', months: 1 }, now)
     expect(r).toMatchObject({ tier: 'pro', replacedActive: true })
-    expect(r.endsAt.toISOString()).toBe('2026-11-30T12:00:00.000Z')
+    expect(r.endsAt.toISOString()).toBe('2026-11-29T12:00:00.000Z') // hoje + 30 dias
     expect(r.startedAt.toISOString()).toBe(now.toISOString())
   })
 
   it('downgrade com tempo sobrando: mesma regra (começa hoje, sem crédito pelo Pro que sobrava)', () => {
     const r = applySubscriptionPurchase({ endsAt: new Date('2027-03-30T12:00:00Z'), tier: 'pro' }, { tier: 'basic', months: 3 }, now)
     expect(r).toMatchObject({ tier: 'basic', replacedActive: true })
-    expect(r.endsAt.toISOString()).toBe('2027-01-30T12:00:00.000Z')
+    expect(r.endsAt.toISOString()).toBe('2027-01-28T12:00:00.000Z') // hoje + 90 dias
   })
 
   it('vencida, mesmo mudando de tipo: conta de agora e não há nada descartado', () => {
     const r = applySubscriptionPurchase({ endsAt: new Date('2026-01-01T00:00:00Z'), tier: 'pro' }, { tier: 'basic', months: 1 }, now)
     expect(r).toMatchObject({ replacedActive: false })
-    expect(r.endsAt.toISOString()).toBe('2026-11-30T12:00:00.000Z')
+    expect(r.endsAt.toISOString()).toBe('2026-11-29T12:00:00.000Z')
   })
 
   it('sem assinatura: conta de agora', () => {
     const r = applySubscriptionPurchase({}, { tier: 'pro', months: 6 }, now)
     expect(r).toMatchObject({ tier: 'pro', replacedActive: false })
-    expect(r.endsAt.toISOString()).toBe('2027-04-30T12:00:00.000Z')
+    expect(r.endsAt.toISOString()).toBe('2027-04-28T12:00:00.000Z') // hoje + 180 dias
   })
 
   it('conta ativa sem tipo gravado conta como Básico: renovar Básico soma, comprar Pro troca', () => {
