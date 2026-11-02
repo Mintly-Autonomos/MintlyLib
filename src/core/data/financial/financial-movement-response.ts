@@ -19,6 +19,12 @@ export interface MovementCounterpartyInput {
  * (não os snapshots): o servidor resolve conta+categoria vivas, monta os
  * Extended References e computa fee/net/data-prevista na transação.
  */
+/** Prato vendido no pedido (corpo da requisição). */
+export interface MovementItemInput {
+  menuItemId: string
+  qty: number
+}
+
 export interface RegisterMovementRequest {
   direction: MovementDirection
   title: string
@@ -31,6 +37,8 @@ export interface RegisterMovementRequest {
   counterparty?: MovementCounterpartyInput
   fiscalNote?: string
   description?: string
+  /** Pratos vendidos; o servidor copia nome e preço do cardápio. */
+  items?: MovementItemInput[]
   origin?: MovementOrigin
   /** Confirma persistir uma possível duplicata (<2min). */
   confirmDuplicate?: boolean
@@ -66,6 +74,8 @@ export interface UpdateMovementRequest {
   counterparty?: MovementCounterpartyInput
   fiscalNote?: string
   description?: string
+  /** Troca a lista de pratos (lista vazia remove). */
+  items?: MovementItemInput[]
   /** `null` limpa; a API valida o documento resultante, não este schema. */
   subcategoryId?: string | null
   /** `null` limpa (volta ao canal efetivo). */

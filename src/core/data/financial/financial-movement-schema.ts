@@ -73,6 +73,32 @@ export enum CounterpartyKind {
   Supplier = 'supplier',
 }
 
+/** Máximo de pratos diferentes numa mesma venda. */
+export const MOVEMENT_ITEMS_MAX = 30
+
+/** Quantidade máxima de um prato numa venda. */
+export const MOVEMENT_ITEM_QTY_MAX = 99
+
+/**
+ * Prato vendido, como o cliente ENVIA: só o prato do cardápio e a quantidade. Nome e preço o servidor
+ * resolve do cardápio (o cliente não os informa, para não forjar o ranking de mais vendidos).
+ */
+export const movementItemInputSchema = s.object({
+  menuItemId: s.string(),
+  qty: s.number().int().min(1).max(MOVEMENT_ITEM_QTY_MAX),
+})
+
+/**
+ * Prato vendido, como fica GUARDADO na venda: `name` e `unitPrice` são a cópia do cardápio no dia da
+ * venda (Extended Reference), então reajustar ou renomear o prato depois não muda o histórico.
+ */
+export const movementItemSchema = s.object({
+  menuItemId: s.string(),
+  name: s.string(),
+  qty: s.number().int().min(1).max(MOVEMENT_ITEM_QTY_MAX),
+  unitPrice: s.number().min(0),
+})
+
 /**
  * Extended Reference da conta: snapshot { _id, name, type } embutido no
  * movimento (fidelidade histórica — renomear a conta não altera movimentos
@@ -154,6 +180,8 @@ const baseMovementSchema = s.object({
 
   fiscalNote: s.string().optional(),
   description: s.string().max(500).optional(),
+  /** Pratos vendidos nesta venda (cópia do cardápio no dia). Ausente em vendas sem pratos informados. */
+  items: s.array(movementItemSchema).max(MOVEMENT_ITEMS_MAX).optional(),
 
   origin: s.type().enum(MovementOrigin),
 
@@ -223,6 +251,8 @@ export const registerMovementSchema = s.object({
   counterparty: counterpartyRequestSchema.optional(),
   fiscalNote: s.string().optional(),
   description: s.string().max(500).optional(),
+  // Pratos vendidos (opcional). Base do ranking "mais vendidos" e do "vendidos no mês" do cardápio.
+  items: s.array(movementItemInputSchema).max(MOVEMENT_ITEMS_MAX).optional(),
   origin: s.type().enum(MovementOrigin).optional(),
   // Confirmação explícita para persistir uma possível duplicata (<2min).
   confirmDuplicate: s.boolean().optional(),
@@ -247,6 +277,7 @@ export const updateMovementSchema = s.object({
   counterparty: counterpartyRequestSchema,
   fiscalNote: s.string(),
   description: s.string().max(500),
+  items: s.array(movementItemInputSchema).max(MOVEMENT_ITEMS_MAX),
   subcategoryId: s.string(),
   channel: s.type().enum(MovementChannel),
 }).partial()

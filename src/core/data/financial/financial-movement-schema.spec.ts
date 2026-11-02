@@ -8,6 +8,8 @@ import {
   PaymentMethod,
   MovementOrigin,
   MovementChannel,
+  MOVEMENT_ITEMS_MAX,
+  movementItemSchema,
 } from './financial-movement-schema'
 import { FinancialAccountType } from './financial-account-schema'
 import { CategoryType } from './financial-category-schema'
@@ -257,5 +259,58 @@ describe('canal e subcategoria (fatia 5)', () => {
     expect(registerMovementSchema.safeParse({ ...validRegisterBody(), subcategoryId: 's1', channel: MovementChannel.Shared }).success).toBe(true)
     expect(updateMovementSchema.safeParse({ subcategoryId: 's1', channel: MovementChannel.DineIn }).success).toBe(true)
     expect(updateMovementSchema.safeParse({ channel: 'outro' }).success).toBe(false)
+  })
+})
+
+describe('pratos da venda (items)', () => {
+  const base = {
+    direction: MovementDirection.In,
+    title: 'Pedido 8547',
+    grossValue: 100,
+    date: '2026-10-29',
+    accountId: 'acc1',
+    categoryId: 'cat1',
+    paymentMethod: PaymentMethod.Pix,
+  }
+
+  it('o registro aceita pratos (prato e quantidade; nome e preço o servidor resolve)', () => {
+    const r = registerMovementSchema.safeParse({
+      ...base,
+      items: [
+        { menuItemId: 'm1', qty: 2 },
+        { menuItemId: 'm2', qty: 1 },
+      ],
+    })
+    expect(r.success).toBe(true)
+  })
+
+  it('pratos são opcionais', () => {
+    expect(registerMovementSchema.safeParse(base).success).toBe(true)
+  })
+
+  it.each([
+    [{ menuItemId: 'm1', qty: 0 }],
+    [{ menuItemId: 'm1', qty: 100 }],
+    [{ menuItemId: 'm1', qty: 1.5 }],
+    [{ qty: 1 }],
+    [{ menuItemId: 'm1' }],
+  ])('recusa prato malformado %j', (item) => {
+    expect(registerMovementSchema.safeParse({ ...base, items: [item] }).success).toBe(false)
+  })
+
+  it('recusa mais de 30 pratos numa venda', () => {
+    const muitos = Array.from({ length: MOVEMENT_ITEMS_MAX + 1 }, (_, i) => ({ menuItemId: `m${i}`, qty: 1 }))
+    expect(registerMovementSchema.safeParse({ ...base, items: muitos }).success).toBe(false)
+  })
+
+  it('o PATCH aceita trocar a lista (inclusive esvaziar)', () => {
+    expect(updateMovementSchema.safeParse({ items: [{ menuItemId: 'm1', qty: 3 }] }).success).toBe(true)
+    expect(updateMovementSchema.safeParse({ items: [] }).success).toBe(true)
+  })
+
+  it('o prato guardado exige nome e preço da data da venda', () => {
+    expect(movementItemSchema.safeParse({ menuItemId: 'm1', name: 'Batata', qty: 2, unitPrice: 12.5 }).success).toBe(true)
+    expect(movementItemSchema.safeParse({ menuItemId: 'm1', qty: 2 }).success).toBe(false)
+    expect(movementItemSchema.safeParse({ menuItemId: 'm1', name: 'Batata', qty: 2, unitPrice: -1 }).success).toBe(false)
   })
 })

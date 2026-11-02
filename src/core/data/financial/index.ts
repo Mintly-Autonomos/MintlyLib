@@ -46,6 +46,10 @@ export {
   updateMovementSchema,
   changeMovementStatusSchema,
   recomputeBalancesSchema,
+  movementItemInputSchema,
+  movementItemSchema,
+  MOVEMENT_ITEMS_MAX,
+  MOVEMENT_ITEM_QTY_MAX,
   MovementDirection,
   MovementStatus,
   MovementStatusSource,
@@ -57,6 +61,7 @@ export {
 export type {
   RegisterMovementRequest,
   UpdateMovementRequest,
+  MovementItemInput,
   MovementListQuery,
   MovementCounterpartyInput,
   FinancialMovementActionResult,
