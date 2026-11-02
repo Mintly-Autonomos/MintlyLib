@@ -16,6 +16,11 @@ export enum TaxRegime {
 export const restaurantSchema = s.object({
   name: s.string(),
   taxRegime: s.type().enum(TaxRegime).optional(),
+  /**
+   * `true` enquanto o dono ainda não fez o onboarding (nasce `true` no cadastro). Ausente ou `false` =
+   * nada pendente: restaurantes anteriores ao onboarding no servidor não têm o campo e não o fazem.
+   */
+  onboardingPending: s.boolean().optional(),
   audit: auditSchema,
 })
 
@@ -24,4 +29,6 @@ export const restaurantSchema = s.object({
 export const restaurantUpdateSchema = s.object({
   name: s.string(),
   taxRegime: s.type().enum(TaxRegime),
+  /** Só `false` (concluir o onboarding) é aceito; a API recusa `true`. */
+  onboardingPending: s.boolean(),
 }).partial()

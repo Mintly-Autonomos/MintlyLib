@@ -13,6 +13,19 @@ describe('restaurantSchema (fatia 3)', () => {
   })
 })
 
+describe('onboardingPending', () => {
+  it('é opcional no restaurante (os antigos não têm)', () => {
+    expect(restaurantSchema.safeParse({ name: 'Cantina', audit }).success).toBe(true)
+    expect(restaurantSchema.safeParse({ name: 'Cantina', audit, onboardingPending: true }).success).toBe(true)
+    expect(restaurantSchema.safeParse({ name: 'Cantina', audit, onboardingPending: 'sim' }).success).toBe(false)
+  })
+
+  it('o PATCH aceita o campo (a API só deixa concluir)', () => {
+    expect(restaurantUpdateSchema.safeParse({ onboardingPending: false }).success).toBe(true)
+    expect(restaurantUpdateSchema.safeParse({ onboardingPending: 'nao' }).success).toBe(false)
+  })
+})
+
 describe('restaurantUpdateSchema', () => {
   it('aceita nome e regime, ambos opcionais', () => {
     expect(restaurantUpdateSchema.safeParse({}).success).toBe(true)
