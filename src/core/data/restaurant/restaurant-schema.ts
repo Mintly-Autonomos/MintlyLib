@@ -16,6 +16,12 @@ export enum TaxRegime {
 export const restaurantSchema = s.object({
   name: s.string(),
   taxRegime: s.type().enum(TaxRegime).optional(),
+  /**
+   * Primeiro acesso: quando o dono concluiu o onboarding. O cadastro grava `null` (vazio = onboarding
+   * pendente); o servidor preenche a data ao concluir (`POST /restaurants/me/first-access`). Restaurantes
+   * anteriores a este campo NÃO o têm (ausente): nada pendente, não passam pelo onboarding.
+   */
+  firstAccessAt: s.date().coerce().optional(),
   audit: auditSchema,
 })
 

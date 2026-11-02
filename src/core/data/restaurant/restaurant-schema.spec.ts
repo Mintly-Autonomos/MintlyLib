@@ -13,6 +13,18 @@ describe('restaurantSchema (fatia 3)', () => {
   })
 })
 
+describe('firstAccessAt (primeiro acesso)', () => {
+  it('é opcional no restaurante (os antigos não têm) e é uma data', () => {
+    expect(restaurantSchema.safeParse({ name: 'Cantina', audit }).success).toBe(true)
+    expect(restaurantSchema.safeParse({ name: 'Cantina', audit, firstAccessAt: new Date('2026-11-02') }).success).toBe(true)
+    expect(restaurantSchema.safeParse({ name: 'Cantina', audit, firstAccessAt: 'ontem' }).success).toBe(false)
+  })
+
+  it('o PATCH NÃO aceita o campo: quem preenche é o servidor, ao concluir o onboarding', () => {
+    expect(restaurantUpdateSchema.safeParse({ firstAccessAt: new Date() }).success).toBe(false)
+  })
+})
+
 describe('restaurantUpdateSchema', () => {
   it('aceita nome e regime, ambos opcionais', () => {
     expect(restaurantUpdateSchema.safeParse({}).success).toBe(true)
