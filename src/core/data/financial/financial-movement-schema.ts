@@ -1,3 +1,4 @@
+import { settlementRuleSchema } from './settlement-rule'
 import { Sapphire } from '@ascendance-hub/sapphire-core'
 import { auditSchema } from '../common/audit'
 import { FinancialAccountType } from './financial-account-schema'
@@ -108,6 +109,8 @@ const baseMovementSchema = s.object({
   // conta não altera o histórico). Ausentes em contas sem prazo/taxa.
   feePercentApplied: s.number().min(0).max(100).optional(),
   settlementDaysApplied: s.number().int().min(0).optional(),
+  /** Regra de repasse da conta congelada no registro (para editar sem reprecificar). */
+  settlementRuleApplied: settlementRuleSchema.optional(),
 
   /**
    * Vencimento: o dia em que o dinheiro entra ou sai. Campo ÚNICO — vale tanto

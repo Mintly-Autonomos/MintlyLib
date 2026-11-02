@@ -2,6 +2,16 @@ export { FinancialAccount } from './financial-account-entity'
 export { financialAccountSchema, financialAccountInsertSchema, FinancialAccountType } from './financial-account-schema'
 export { financialAccountUpdateSchema } from './financial-account-schema'
 export {
+  settlementRuleSchema,
+  SettlementRuleKind,
+  settlementDueDate,
+  resolveSettlementRule,
+  validateSettlementRule,
+  describeSettlementRule,
+  weekdayName,
+} from './settlement-rule'
+export type { SettlementRule } from './settlement-rule'
+export {
   importMovementRowSchema,
   importMovementsSchema,
   IMPORT_MOVEMENTS_MAX_ROWS,

@@ -110,3 +110,54 @@ describe('financialAccountUpdateSchema — type imutável (P5)', () => {
     expect(financialAccountUpdateSchema.safeParse({ feePercent: 15 }).success).toBe(true)
   })
 })
+
+describe('conta plataforma com regra de repasse', () => {
+  const base = {
+    restaurantId: 'rest-123',
+    name: 'iFood',
+    type: FinancialAccountType.Platform,
+    status: RecordStatus.Active,
+    isDefault: false,
+    feePercent: 12,
+    audit: mockAudit,
+  }
+
+  it('aceita só settlementRule (repasse toda quarta), sem settlementDays', () => {
+    const result = financialAccountSchema.safeParse({
+      ...base,
+      settlementRule: { kind: 'weekly', weekday: 3 },
+    })
+    expect(result.success).toBe(true)
+  })
+
+  it('conta antiga, só com settlementDays, continua válida', () => {
+    expect(financialAccountSchema.safeParse({ ...base, settlementDays: 7 }).success).toBe(true)
+  })
+
+  it('recusa regra malformada', () => {
+    const result = financialAccountSchema.safeParse({
+      ...base,
+      settlementRule: { kind: 'weekly', weekday: 9 },
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it('conta que não é plataforma continua recusando regra de repasse', () => {
+    const result = financialAccountSchema.safeParse({
+      restaurantId: 'rest-123',
+      name: 'Caixa',
+      type: FinancialAccountType.Cash,
+      status: RecordStatus.Active,
+      isDefault: false,
+      settlementRule: { kind: 'weekly', weekday: 3 },
+      audit: mockAudit,
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it('o PATCH aceita trocar só a regra', () => {
+    expect(
+      financialAccountUpdateSchema.safeParse({ settlementRule: { kind: 'monthly', day: 10 } }).success,
+    ).toBe(true)
+  })
+})
