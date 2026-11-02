@@ -23,6 +23,15 @@ describe('RestaurantClient', () => {
     expect(patch).toHaveBeenCalledWith('/me', { taxRegime: TaxRegime.Mei }, expect.anything())
   })
 
+  it('completeFirstAccess faz POST /me/first-access sem dados', async () => {
+    const client = new RestaurantClient()
+    const post = jest.spyOn((client as any).http.connection, 'post').mockResolvedValue({ data: { payload: {} } } as any)
+
+    await client.completeFirstAccess(headers)
+
+    expect(post).toHaveBeenCalledWith('/me/first-access', {}, expect.anything())
+  })
+
   it('não expõe CRUD genérico (as rotas não existem)', () => {
     const c = new RestaurantClient() as any
     expect(c.insert).toBeUndefined()

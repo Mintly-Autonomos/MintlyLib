@@ -13,16 +13,15 @@ describe('restaurantSchema (fatia 3)', () => {
   })
 })
 
-describe('onboardingPending', () => {
-  it('é opcional no restaurante (os antigos não têm)', () => {
+describe('firstAccessAt (primeiro acesso)', () => {
+  it('é opcional no restaurante (os antigos não têm) e é uma data', () => {
     expect(restaurantSchema.safeParse({ name: 'Cantina', audit }).success).toBe(true)
-    expect(restaurantSchema.safeParse({ name: 'Cantina', audit, onboardingPending: true }).success).toBe(true)
-    expect(restaurantSchema.safeParse({ name: 'Cantina', audit, onboardingPending: 'sim' }).success).toBe(false)
+    expect(restaurantSchema.safeParse({ name: 'Cantina', audit, firstAccessAt: new Date('2026-11-02') }).success).toBe(true)
+    expect(restaurantSchema.safeParse({ name: 'Cantina', audit, firstAccessAt: 'ontem' }).success).toBe(false)
   })
 
-  it('o PATCH aceita o campo (a API só deixa concluir)', () => {
-    expect(restaurantUpdateSchema.safeParse({ onboardingPending: false }).success).toBe(true)
-    expect(restaurantUpdateSchema.safeParse({ onboardingPending: 'nao' }).success).toBe(false)
+  it('o PATCH NÃO aceita o campo: quem preenche é o servidor, ao concluir o onboarding', () => {
+    expect(restaurantUpdateSchema.safeParse({ firstAccessAt: new Date() }).success).toBe(false)
   })
 })
 

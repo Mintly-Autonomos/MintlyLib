@@ -17,10 +17,11 @@ export const restaurantSchema = s.object({
   name: s.string(),
   taxRegime: s.type().enum(TaxRegime).optional(),
   /**
-   * `true` enquanto o dono ainda não fez o onboarding (nasce `true` no cadastro). Ausente ou `false` =
-   * nada pendente: restaurantes anteriores ao onboarding no servidor não têm o campo e não o fazem.
+   * Primeiro acesso: quando o dono concluiu o onboarding. O cadastro grava `null` (vazio = onboarding
+   * pendente); o servidor preenche a data ao concluir (`POST /restaurants/me/first-access`). Restaurantes
+   * anteriores a este campo NÃO o têm (ausente): nada pendente, não passam pelo onboarding.
    */
-  onboardingPending: s.boolean().optional(),
+  firstAccessAt: s.date().coerce().optional(),
   audit: auditSchema,
 })
 
@@ -29,6 +30,4 @@ export const restaurantSchema = s.object({
 export const restaurantUpdateSchema = s.object({
   name: s.string(),
   taxRegime: s.type().enum(TaxRegime),
-  /** Só `false` (concluir o onboarding) é aceito; a API recusa `true`. */
-  onboardingPending: s.boolean(),
 }).partial()

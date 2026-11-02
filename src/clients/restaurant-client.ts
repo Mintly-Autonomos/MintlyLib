@@ -18,6 +18,15 @@ export class RestaurantClient {
     return response.data
   }
 
+  /**
+   * Conclui o onboarding: o servidor grava a data do primeiro acesso (`firstAccessAt`). Sem corpo, e
+   * repetir não muda a data (idempotente).
+   */
+  async completeFirstAccess (headers: Headers): Promise<ResponseDto<Restaurant>> {
+    const response = await this.http.connection.post<ResponseDto<Restaurant>>('/me/first-access', {}, withHeaders(headers))
+    return response.data
+  }
+
   /** Atualiza nome e/ou regime tributário. */
   async updateMe (body: RestaurantUpdateRequest, headers: Headers): Promise<ResponseDto<Restaurant>> {
     const response = await this.http.connection.patch<ResponseDto<Restaurant>>('/me', body, withHeaders(headers))
