@@ -12,7 +12,8 @@ import type {
 } from '../core/data/menu/menu-item-response'
 
 /**
- * Cardápio (pratos com preço). A rota /menu-items NÃO expõe GET /:id nem DELETE (só inativação).
+ * Cardápio (pratos com preço). A rota /menu-items NÃO expõe GET /:id. O prato pode ser inativado (reversível) ou
+ * excluído de vez (`delete`).
  * COMPÕE o HttpBaseClient e re-expõe o subconjunto válido + as ações próprias de preço.
  */
 export class MenuItemClient implements Findable<MenuItem>, Listable<MenuItem> {
@@ -58,6 +59,15 @@ export class MenuItemClient implements Findable<MenuItem>, Listable<MenuItem> {
   /** Inativa o prato (some dos novos usos; nada é apagado). Não recebe corpo. */
   async inactivateUpdate (id: string, headers: Headers): Promise<ResponseDto<MenuItemActionResult>> {
     const response = await this.http.connection.patch<ResponseDto<MenuItemActionResult>>(`/${id}/inactivate`, undefined, withHeaders(headers))
+    return response.data
+  }
+
+  /**
+   * Exclui o prato de vez (não tem volta; para só tirar do cardápio use `inactivateUpdate`). As vendas já
+   * registradas guardam o nome e o preço do prato e continuam como estavam. Não recebe corpo.
+   */
+  async delete (id: string, headers: Headers): Promise<ResponseDto<MenuItemActionResult>> {
+    const response = await this.http.connection.delete<ResponseDto<MenuItemActionResult>>(`/${id}`, withHeaders(headers))
     return response.data
   }
 
