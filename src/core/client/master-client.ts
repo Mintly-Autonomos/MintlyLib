@@ -1,6 +1,7 @@
 import {
   AuthClient,
   PersonClient,
+  UserClient,
   RestaurantClient,
   FinancialAccountClient,
   FinancialCategoryClient,
@@ -14,6 +15,7 @@ import {
 export class MasterClient {
   authClient: AuthClient
   personClient: PersonClient
+  userClient: UserClient
   restaurantClient: RestaurantClient
   financialAccountClient: FinancialAccountClient
   financialCategoryClient: FinancialCategoryClient
@@ -26,6 +28,7 @@ export class MasterClient {
   constructor () {
     this.authClient = new AuthClient()
     this.personClient = new PersonClient()
+    this.userClient = new UserClient()
     this.restaurantClient = new RestaurantClient()
     this.financialAccountClient = new FinancialAccountClient()
     this.financialCategoryClient = new FinancialCategoryClient()

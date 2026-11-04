@@ -22,6 +22,11 @@ export const restaurantSchema = s.object({
    * anteriores a este campo NÃO o têm (ausente): nada pendente, não passam pelo onboarding.
    */
   firstAccessAt: s.date().coerce().optional(),
+  /**
+   * Quando o dono pediu a exclusão do restaurante (`POST /restaurants/me/deletion-request`). Ausente/`null` =
+   * sem pedido. É só um pedido: nada é apagado até ser analisado, e o dono pode cancelar.
+   */
+  deletionRequestedAt: s.date().coerce().optional(),
   audit: auditSchema,
 })
 
