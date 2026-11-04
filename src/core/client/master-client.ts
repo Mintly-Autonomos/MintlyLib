@@ -10,6 +10,7 @@ import {
   ReportClient,
   DashboardClient,
   SubscriptionClient,
+  AiClient,
 } from '../../clients'
 
 export class MasterClient {
@@ -24,6 +25,7 @@ export class MasterClient {
   reportClient: ReportClient
   dashboardClient: DashboardClient
   subscriptionClient: SubscriptionClient
+  aiClient: AiClient
 
   constructor () {
     this.authClient = new AuthClient()
@@ -37,5 +39,6 @@ export class MasterClient {
     this.reportClient = new ReportClient()
     this.dashboardClient = new DashboardClient()
     this.subscriptionClient = new SubscriptionClient()
+    this.aiClient = new AiClient()
   }
 }
