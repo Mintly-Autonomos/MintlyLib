@@ -1,10 +1,12 @@
 import {
+  SUBSCRIPTION_MEMBER_LIMIT,
   SUBSCRIPTION_PLAN_DAYS,
   addDays,
   applySubscriptionPurchase,
   computeSubscriptionState,
   isSubscriptionPlan,
   isSubscriptionTier,
+  memberLimitForTier,
   subscriptionCheckoutSchema,
   subscriptionPlanPrice,
   subscriptionPlans,
@@ -72,6 +74,18 @@ describe('preços do Pro (R$ 229/mês, mesmos descontos por quantidade)', () => 
       ['pro', 'Pro', 22900],
     ])
     tiers.forEach((t) => expect(t.plans.map((p) => p.months)).toEqual([1, 3, 6, 12]))
+  })
+
+  it('vagas de funcionário: Básico 5, Pro 20; sem tipo conhecido vale o Básico', () => {
+    expect(SUBSCRIPTION_MEMBER_LIMIT).toEqual({ basic: 5, pro: 20 })
+    expect(memberLimitForTier('basic')).toBe(5)
+    expect(memberLimitForTier('pro')).toBe(20)
+    expect(memberLimitForTier(undefined)).toBe(5)
+    expect(memberLimitForTier(null)).toBe(5)
+  })
+
+  it('subscriptionTiers informa as vagas de cada tipo', () => {
+    expect(subscriptionTiers().map((t) => [t.tier, t.memberLimit])).toEqual([['basic', 5], ['pro', 20]])
   })
 
   it('isSubscriptionTier só aceita basic e pro', () => {

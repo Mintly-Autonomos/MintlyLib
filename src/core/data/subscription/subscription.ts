@@ -19,6 +19,20 @@ export const SUBSCRIPTION_TIER_LABEL: Record<SubscriptionTier, string> = {
 }
 
 /**
+ * Funcionários ATIVOS que cada tipo de assinatura permite (o dono não conta). Inativar alguém libera a vaga.
+ * É a regra única: a API barra com ela e o front só a mostra.
+ */
+export const SUBSCRIPTION_MEMBER_LIMIT: Record<SubscriptionTier, number> = {
+  basic: 5,
+  pro: 20,
+}
+
+/** Vagas de funcionário de um tipo; sem tipo conhecido vale o padrão (Básico), igual ao resto da assinatura. */
+export function memberLimitForTier (tier?: SubscriptionTier | null): number {
+  return SUBSCRIPTION_MEMBER_LIMIT[tier ?? DEFAULT_SUBSCRIPTION_TIER]
+}
+
+/**
  * Dias de acesso de cada plano. Dias FIXOS, não meses de calendário: 1 mês = 30 dias, 3 = 90, 6 = 180 e
  * 12 = 360. Assim o prazo de cada plano é sempre o mesmo, em qualquer época do ano.
  */
@@ -90,6 +104,8 @@ export interface SubscriptionTierOption {
   tier: SubscriptionTier
   label: string
   monthlyCents: number
+  /** Funcionários ativos que o tipo permite. */
+  memberLimit: number
   plans: SubscriptionPlanOption[]
 }
 
@@ -98,6 +114,7 @@ export function subscriptionTiers (): SubscriptionTierOption[] {
     tier,
     label: SUBSCRIPTION_TIER_LABEL[tier],
     monthlyCents: SUBSCRIPTION_MONTHLY_PRICE_CENTS[tier],
+    memberLimit: SUBSCRIPTION_MEMBER_LIMIT[tier],
     plans: subscriptionPlans(tier),
   }))
 }
