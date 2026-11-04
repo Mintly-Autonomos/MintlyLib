@@ -3,7 +3,7 @@ import { MenuItemClient } from './menu-item-client'
 describe('MenuItemClient', () => {
   beforeAll(() => { process.env.BACK_END_URL = 'http://api.test' })
   const headers = { env: 'staging', authorization: 'Bearer t' } as any
-  const spy = (client: any, method: 'get' | 'post' | 'patch') => jest.spyOn(client.http.connection, method).mockResolvedValue({ data: { payload: {} } } as any)
+  const spy = (client: any, method: 'get' | 'post' | 'patch' | 'delete') => jest.spyOn(client.http.connection, method).mockResolvedValue({ data: { payload: {} } } as any)
 
   it('insert → POST /', async () => {
     const c = new MenuItemClient()
@@ -42,9 +42,16 @@ describe('MenuItemClient', () => {
     expect(patch).toHaveBeenNthCalledWith(2, '/m1/reactivate', undefined, expect.anything())
   })
 
-  it('não expõe findById/delete (a rota não tem)', () => {
+  it('delete → DELETE /:id (exclui de vez) e devolve a mensagem', async () => {
+    const c = new MenuItemClient()
+    const del = jest.spyOn((c as any).http.connection, 'delete').mockResolvedValue({ data: { payload: { message: 'ok' } } } as any)
+    const res = await c.delete('m1', headers)
+    expect(del).toHaveBeenCalledWith('/m1', expect.anything())
+    expect(res.payload).toEqual({ message: 'ok' })
+  })
+
+  it('não expõe findById (a rota não tem)', () => {
     const c = new MenuItemClient() as any
     expect(c.findById).toBeUndefined()
-    expect(c.delete).toBeUndefined()
   })
 })
