@@ -43,10 +43,10 @@ export const SUBSCRIPTION_PLAN_DAYS: Record<SubscriptionPlanMonths, number> = {
   12: 360,
 }
 
-/** Valor base de um mês de cada tipo, em centavos (Básico R$ 150,00; Pro R$ 229,00). Dinheiro sempre em centavos inteiros. */
+/** Valor base de um mês de cada tipo, em centavos (Básico R$ 149,90; Pro R$ 229,90). Dinheiro sempre em centavos inteiros. */
 export const SUBSCRIPTION_MONTHLY_PRICE_CENTS: Record<SubscriptionTier, number> = {
-  basic: 15000,
-  pro: 22900,
+  basic: 14990,
+  pro: 22990,
 }
 
 /** Desconto (em %) sobre o valor cheio de cada plano. É o mesmo para todos os tipos. */

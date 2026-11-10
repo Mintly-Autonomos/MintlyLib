@@ -13,21 +13,21 @@ import {
   subscriptionTiers,
 } from './subscription'
 
-describe('preços dos planos (R$ 150/mês; 3 meses 5%, 6 meses 10%, 12 meses 15%)', () => {
-  it('1 mês: R$ 150,00 sem desconto', () => {
-    expect(subscriptionPlanPrice(1)).toEqual({ tier: 'basic', months: 1, days: 30, discountPercent: 0, listCents: 15000, totalCents: 15000, perMonthCents: 15000 })
+describe('preços dos planos (R$ 149,90/mês; 3 meses 5%, 6 meses 10%, 12 meses 15%)', () => {
+  it('1 mês: R$ 149,90 sem desconto', () => {
+    expect(subscriptionPlanPrice(1)).toEqual({ tier: 'basic', months: 1, days: 30, discountPercent: 0, listCents: 14990, totalCents: 14990, perMonthCents: 14990 })
   })
 
-  it('3 meses: 5% → R$ 427,50', () => {
-    expect(subscriptionPlanPrice(3)).toMatchObject({ discountPercent: 5, listCents: 45000, totalCents: 42750, perMonthCents: 14250 })
+  it('3 meses: 5% → R$ 427,22 (42721,5 arredonda para cima)', () => {
+    expect(subscriptionPlanPrice(3)).toMatchObject({ discountPercent: 5, listCents: 44970, totalCents: 42722, perMonthCents: 14241 })
   })
 
-  it('6 meses: 10% → R$ 810,00', () => {
-    expect(subscriptionPlanPrice(6)).toMatchObject({ discountPercent: 10, listCents: 90000, totalCents: 81000, perMonthCents: 13500 })
+  it('6 meses: 10% → R$ 809,46', () => {
+    expect(subscriptionPlanPrice(6)).toMatchObject({ discountPercent: 10, listCents: 89940, totalCents: 80946, perMonthCents: 13491 })
   })
 
-  it('12 meses: 15% → R$ 1.530,00', () => {
-    expect(subscriptionPlanPrice(12)).toMatchObject({ discountPercent: 15, listCents: 180000, totalCents: 153000, perMonthCents: 12750 })
+  it('12 meses: 15% → R$ 1.528,98', () => {
+    expect(subscriptionPlanPrice(12)).toMatchObject({ discountPercent: 15, listCents: 179880, totalCents: 152898, perMonthCents: 12742 })
   })
 
   it('o total é sempre um número inteiro de centavos', () => {
@@ -41,21 +41,21 @@ describe('preços dos planos (R$ 150/mês; 3 meses 5%, 6 meses 10%, 12 meses 15%
   })
 })
 
-describe('preços do Pro (R$ 229/mês, mesmos descontos por quantidade)', () => {
-  it('1 mês: R$ 229,00 sem desconto', () => {
-    expect(subscriptionPlanPrice(1, 'pro')).toEqual({ tier: 'pro', months: 1, days: 30, discountPercent: 0, listCents: 22900, totalCents: 22900, perMonthCents: 22900 })
+describe('preços do Pro (R$ 229,90/mês, mesmos descontos por quantidade)', () => {
+  it('1 mês: R$ 229,90 sem desconto', () => {
+    expect(subscriptionPlanPrice(1, 'pro')).toEqual({ tier: 'pro', months: 1, days: 30, discountPercent: 0, listCents: 22990, totalCents: 22990, perMonthCents: 22990 })
   })
 
-  it('3 meses: 5% → R$ 652,65', () => {
-    expect(subscriptionPlanPrice(3, 'pro')).toMatchObject({ discountPercent: 5, listCents: 68700, totalCents: 65265 })
+  it('3 meses: 5% → R$ 655,22', () => {
+    expect(subscriptionPlanPrice(3, 'pro')).toMatchObject({ discountPercent: 5, listCents: 68970, totalCents: 65522 })
   })
 
-  it('6 meses: 10% → R$ 1.236,60', () => {
-    expect(subscriptionPlanPrice(6, 'pro')).toMatchObject({ discountPercent: 10, listCents: 137400, totalCents: 123660 })
+  it('6 meses: 10% → R$ 1.241,46', () => {
+    expect(subscriptionPlanPrice(6, 'pro')).toMatchObject({ discountPercent: 10, listCents: 137940, totalCents: 124146 })
   })
 
-  it('12 meses: 15% → R$ 2.335,80', () => {
-    expect(subscriptionPlanPrice(12, 'pro')).toMatchObject({ discountPercent: 15, listCents: 274800, totalCents: 233580, perMonthCents: 19465 })
+  it('12 meses: 15% → R$ 2.344,98', () => {
+    expect(subscriptionPlanPrice(12, 'pro')).toMatchObject({ discountPercent: 15, listCents: 275880, totalCents: 234498, perMonthCents: 19542 })
   })
 
   it('o total é sempre inteiro e o Pro custa mais que o Básico em todos os planos', () => {
@@ -70,8 +70,8 @@ describe('preços do Pro (R$ 229/mês, mesmos descontos por quantidade)', () => 
   it('subscriptionTiers lista Básico e Pro, cada um com os 4 planos', () => {
     const tiers = subscriptionTiers()
     expect(tiers.map((t) => [t.tier, t.label, t.monthlyCents])).toEqual([
-      ['basic', 'Básico', 15000],
-      ['pro', 'Pro', 22900],
+      ['basic', 'Básico', 14990],
+      ['pro', 'Pro', 22990],
     ])
     tiers.forEach((t) => expect(t.plans.map((p) => p.months)).toEqual([1, 3, 6, 12]))
   })
