@@ -37,6 +37,14 @@ describe('barrel de reports', () => {
     expect([pillar.key, insight.kind, label, query.month]).toEqual(['runway', 'breakEvenReached', 'noData', '2026-07'])
   })
 
+  it('exporta o histórico de 12 meses e o mesmo mês do ano anterior do Resultado', () => {
+    const query: reports.ResultQuery = { month: '2026-12', historyMonths: 12 }
+    const months: reports.ResultHistoryMonths = 6
+    const py = { month: '2025-11', lines: {} as reports.ResultLines, deltas: {} as reports.ResultPreviousYear['deltas'] } as reports.ResultPreviousYear
+    const r = { previousYear: py } as Pick<reports.ResultReport, 'previousYear'>
+    expect([query.historyMonths, months, r.previousYear?.month]).toEqual([12, 6, '2025-11'])
+  })
+
   it('exporta a trava da nota da saúde', () => {
     const reason: reports.HealthCapReason = 'overduePayables'
     const cap: reports.HealthCap = { maxScore: 69, reasons: ['loss', reason] }
