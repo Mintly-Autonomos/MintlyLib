@@ -99,3 +99,27 @@ export interface MovementListQuery {
 export interface FinancialMovementActionResult {
   message: string
 }
+
+/** Corpo de POST /financial-movements/transfers (ver `transferSchema`). */
+export interface TransferRequest {
+  fromAccountId: string
+  toAccountId: string
+  amount: number
+  /** AAAA-MM-DD ou ISO. */
+  date: string | Date
+  description?: string
+}
+
+/** Os dois lançamentos criados pela transferência (mesmo `transferId`). */
+export interface TransferResult {
+  transferId: string
+  out: import('./financial-movement-entity').FinancialMovement
+  in: import('./financial-movement-entity').FinancialMovement
+}
+
+/** Corpo de PUT /financial-accounts/:id/opening-balance (ver `openingBalanceSchema`). */
+export interface OpeningBalanceRequest {
+  amount: number
+  /** AAAA-MM-DD ou ISO. */
+  date: string | Date
+}

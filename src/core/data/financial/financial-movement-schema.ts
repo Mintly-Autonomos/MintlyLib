@@ -184,6 +184,10 @@ const baseMovementSchema = s.object({
   items: s.array(movementItemSchema).max(MOVEMENT_ITEMS_MAX).optional(),
 
   origin: s.type().enum(MovementOrigin),
+  // Transferência entre contas (S3.2): os dois lançamentos do par têm o mesmo `transferId`, e cada um
+  // guarda a conta do outro lado. Criados só por POST /financial-movements/transfers.
+  transferId: s.string().optional(),
+  transferCounterpart: accountRefSchema.optional(),
 
   history: s.array(
     s.object({
@@ -281,6 +285,27 @@ export const updateMovementSchema = s.object({
   subcategoryId: s.string(),
   channel: s.type().enum(MovementChannel),
 }).partial()
+
+/**
+ * Corpo de POST /financial-movements/transfers (S3.2): tira `amount` de uma conta e põe na outra, na mesma
+ * data. Sem taxa e já liquidado. Não é venda nem custo: fica fora do lucro, dos custos e do imposto.
+ */
+export const transferSchema = s.object({
+  fromAccountId: s.string(),
+  toAccountId: s.string(),
+  amount: s.number().positive(),
+  date: s.date().coerce(),
+  description: s.string().max(500).optional(),
+})
+
+/**
+ * Corpo de PUT /financial-accounts/:id/opening-balance (S3.2): o saldo com que a conta começou no Mintly,
+ * na data informada. Substitui o saldo inicial anterior da conta (não duplica). `amount` 0 remove.
+ */
+export const openingBalanceSchema = s.object({
+  amount: s.number().min(0),
+  date: s.date().coerce(),
+})
 
 /** Corpo de PATCH /financial-movements/:id/status. */
 export const changeMovementStatusSchema = s.object({
