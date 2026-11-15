@@ -29,6 +29,8 @@ describe('restaurantUpdateSchema', () => {
   it('aceita nome e regime, ambos opcionais', () => {
     expect(restaurantUpdateSchema.safeParse({}).success).toBe(true)
     expect(restaurantUpdateSchema.safeParse({ taxRegime: TaxRegime.SimplesNacionalAnexoI }).success).toBe(true)
+    expect(restaurantUpdateSchema.safeParse({ taxRegime: TaxRegime.SimplesNacionalAnexoII }).success).toBe(true)
+    expect(TaxRegime.SimplesNacionalAnexoII).toBe('simplesNacionalAnexoII')
     expect(restaurantUpdateSchema.safeParse({ name: 'Novo nome' }).success).toBe(true)
   })
 

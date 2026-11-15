@@ -5,12 +5,15 @@ const s = new Sapphire()
 
 /**
  * Regime tributário (M5 / MIN-23). Decide o caminho do cálculo: MEI paga DAS
- * fixo; Simples Nacional Anexo I paga alíquota efetiva sobre a receita.
+ * fixo; Simples Nacional paga alíquota efetiva sobre a receita, pela tabela do anexo:
+ * Anexo I (comércio: revenda) ou Anexo II (indústria: produção própria, como confeitaria
+ * e padaria que fabricam o que vendem). Pode ser trocado a qualquer momento.
  * Ausente = "não configurado" (o imposto sai 0 com aviso).
  */
 export enum TaxRegime {
   Mei = 'mei',
   SimplesNacionalAnexoI = 'simplesNacionalAnexoI',
+  SimplesNacionalAnexoII = 'simplesNacionalAnexoII',
 }
 
 export const restaurantSchema = s.object({

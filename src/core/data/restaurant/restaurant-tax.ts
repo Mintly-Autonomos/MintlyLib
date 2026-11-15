@@ -1,7 +1,7 @@
 import type { TaxRegime } from './restaurant-schema'
 import type { Restaurant } from './restaurant-entity'
 
-/** Faixa do Anexo I do Simples Nacional (MIN-23). `upTo` inclusivo. */
+/** Faixa da tabela do Simples Nacional (Anexo I ou II, conforme o regime). `upTo` inclusivo. */
 export interface TaxBracket {
   index: number
   upTo: number

@@ -22,6 +22,11 @@ export interface ResultQuery {
   month?: string
 }
 
+/**
+ * Linhas do DRE gerencial. Tudo até `netProfit` é OPERACIONAL: categorias com Natureza "Não operacional"
+ * (empréstimo recebido, aporte, saldo inicial, equipamento, parcelas, juros) ficam fora da receita e das
+ * despesas e aparecem só nas linhas `nonOperating*`, depois do resultado.
+ */
 export interface ResultLines {
   grossRevenue: number
   taxes: number
@@ -29,8 +34,15 @@ export interface ResultLines {
   cmv: number
   grossMargin: number
   operatingExpenses: number
+  /** Resultado operacional: o "lucro do mês". */
   netProfit: number
   netMargin: number | null
+  /** Entradas de categorias "Não operacional" (empréstimo, aporte, saldo inicial...). */
+  nonOperatingIncome: number
+  /** Saídas de categorias "Não operacional" (equipamento, parcelas, juros...). */
+  nonOperatingExpenses: number
+  /** Resultado operacional + entradas − saídas não operacionais: quanto o mês mexeu no dinheiro, por competência. */
+  resultAfterNonOperating: number
 }
 
 export type ResultLineKey = Exclude<keyof ResultLines, 'netMargin'>
