@@ -156,10 +156,10 @@ describe('computeSubscriptionState', () => {
 })
 
 describe('dias de cada plano (dias fixos, não meses de calendário)', () => {
-  it('1 mês = 30 dias, 3 = 90, 6 = 180 e 12 = 360', () => {
-    expect(SUBSCRIPTION_PLAN_DAYS).toEqual({ 1: 30, 3: 90, 6: 180, 12: 360 })
-    expect(subscriptionPlans('basic').map((p) => p.days)).toEqual([30, 90, 180, 360])
-    expect(subscriptionPlans('pro').map((p) => p.days)).toEqual([30, 90, 180, 360])
+  it('1 mês = 30 dias, 3 = 90, 6 = 180 e 12 = 365 (ano de verdade)', () => {
+    expect(SUBSCRIPTION_PLAN_DAYS).toEqual({ 1: 30, 3: 90, 6: 180, 12: 365 })
+    expect(subscriptionPlans('basic').map((p) => p.days)).toEqual([30, 90, 180, 365])
+    expect(subscriptionPlans('pro').map((p) => p.days)).toEqual([30, 90, 180, 365])
   })
 })
 
