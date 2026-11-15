@@ -17,9 +17,16 @@ export interface ReportComparison {
   untilDay: number | null
 }
 
-/** `month` em AAAA-MM; padrão o mês corrente no servidor. */
+/** Meses do histórico (`history`) do Resultado: 6 (padrão) ou 12. */
+export type ResultHistoryMonths = 6 | 12
+
+/**
+ * `month` em AAAA-MM; padrão o mês corrente no servidor. No Resultado pode ser um mês **futuro**
+ * (até 12 meses à frente): mostra só o que já está lançado com competência naquele mês.
+ */
 export interface ResultQuery {
   month?: string
+  historyMonths?: ResultHistoryMonths
 }
 
 /**
@@ -81,6 +88,17 @@ export interface ResultHistoryPoint {
   netMargin: number | null
 }
 
+/**
+ * O mesmo mês do ano anterior (nov/25 × nov/26): leitura natural para negócio sazonal.
+ * `deltas` = variação do mês atual sobre esse mês (mesma regra de `ResultReport.deltas`; no mês em
+ * andamento compara os mesmos dias, 1..`comparison.untilDay`).
+ */
+export interface ResultPreviousYear {
+  month: string
+  lines: ResultLines
+  deltas: Record<ResultLineKey, number | null>
+}
+
 export interface ResultReport {
   referenceMonth: string
   previousMonth: string
@@ -93,4 +111,6 @@ export interface ResultReport {
   history: ResultHistoryPoint[]
   insights: ResultInsight[]
   comparison: ReportComparison
+  /** null = nenhum lançamento no mesmo mês do ano anterior (nada a comparar). */
+  previousYear: ResultPreviousYear | null
 }
