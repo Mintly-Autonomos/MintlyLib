@@ -37,6 +37,13 @@ describe('barrel de reports', () => {
     expect([pillar.key, insight.kind, label, query.month]).toEqual(['runway', 'breakEvenReached', 'noData', '2026-07'])
   })
 
+  it('exporta a trava da nota da saúde', () => {
+    const reason: reports.HealthCapReason = 'overduePayables'
+    const cap: reports.HealthCap = { maxScore: 69, reasons: ['loss', reason] }
+    const health = { score: 69, cap, label: 'attention' } as Pick<reports.OverviewHealth, 'score' | 'cap' | 'label'>
+    expect([health.cap?.maxScore, health.cap?.reasons]).toEqual([69, ['loss', 'overduePayables']])
+  })
+
   it('exporta os tipos dos ajustes (comparação, insights com base, repasses)', () => {
     const comparison: reports.ReportComparison = { kind: 'samePeriod', untilDay: 13 }
     const insight: reports.OverviewInsight = { kind: 'cmvAboveTarget', severity: 'warning', pct: 0.4, targetMax: 0.35, impact: 100, basisMonth: '2026-09' }

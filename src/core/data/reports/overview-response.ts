@@ -33,8 +33,25 @@ export interface HealthPillar {
   value: number | null
 }
 
+/**
+ * Motivo que trava a nota (relatório Sweetie Bel, S2.3): os pilares são do mês-base, mas
+ * prejuízo, conta vencida ou caixa negativo não podem conviver com "saudável".
+ * - `loss`: o mês-base fechou no prejuízo (lucro líquido < 0);
+ * - `overduePayables`: há contas a pagar vencidas hoje (só no mês atual);
+ * - `negativeCash`: o caixa de hoje está negativo (só no mês atual).
+ */
+export type HealthCapReason = 'loss' | 'overduePayables' | 'negativeCash'
+
+/** Teto aplicado à nota. `maxScore` = o menor teto entre os motivos (`score` já vem limitado a ele). */
+export interface HealthCap {
+  maxScore: number
+  reasons: HealthCapReason[]
+}
+
 export interface OverviewHealth {
   score: number | null
+  /** null = nada trava a nota. Com teto, `score` ≤ `cap.maxScore` e o `label` segue o score já limitado. */
+  cap: HealthCap | null
   label: HealthLabel
   /**
    * Mês dos pilares do mês. Mês atual: o último mês fechado (+ fôlego de hoje).
