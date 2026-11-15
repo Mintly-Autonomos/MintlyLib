@@ -34,13 +34,13 @@ export function memberLimitForTier (tier?: SubscriptionTier | null): number {
 
 /**
  * Dias de acesso de cada plano. Dias FIXOS, não meses de calendário: 1 mês = 30 dias, 3 = 90, 6 = 180 e
- * 12 = 360. Assim o prazo de cada plano é sempre o mesmo, em qualquer época do ano.
+ * 12 = 365 (o anual é um ano de verdade, não 12 × 30). Assim o prazo de cada plano é sempre o mesmo, em qualquer época do ano.
  */
 export const SUBSCRIPTION_PLAN_DAYS: Record<SubscriptionPlanMonths, number> = {
   1: 30,
   3: 90,
   6: 180,
-  12: 360,
+  12: 365,
 }
 
 /** Valor base de um mês de cada tipo, em centavos (Básico R$ 149,90; Pro R$ 229,90). Dinheiro sempre em centavos inteiros. */
@@ -76,7 +76,7 @@ export function isSubscriptionTier (tier: unknown): tier is SubscriptionTier {
 export interface SubscriptionPlanOption {
   tier: SubscriptionTier
   months: SubscriptionPlanMonths
-  /** Dias de acesso que o plano dá (30, 90, 180 ou 360). */
+  /** Dias de acesso que o plano dá (30, 90, 180 ou 365). */
   days: number
   discountPercent: number
   /** Valor sem desconto (meses × base do tipo). */
@@ -168,7 +168,7 @@ export function addDays (date: Date, days: number): Date {
  * Resultado de um pagamento aprovado. Mesmo tipo e ainda ativa: SOMA ao que sobrou. Tipo diferente
  * (upgrade OU downgrade): sem desconto nem crédito pelo que sobrou, e o novo tipo começa a contar
  * HOJE (não quando o outro acabaria). Vencida ou sem assinatura: conta a partir de agora. O tempo
- * comprado é o do plano em dias fixos (30, 90, 180 ou 360).
+ * comprado é o do plano em dias fixos (30, 90, 180 ou 365).
  */
 export interface SubscriptionPurchaseResult {
   endsAt: Date
@@ -209,7 +209,7 @@ export interface SubscriptionCheckoutRequest {
   /** Omitido = Básico. */
   tier?: SubscriptionTier
   /**
-   * Renovação automática: o provedor cobra de novo a cada ciclo do plano (30, 90, 180 ou 360 dias) no mesmo
+   * Renovação automática: o provedor cobra de novo a cada ciclo do plano (30, 90, 180 ou 365 dias) no mesmo
    * cartão, e cada cobrança aprovada soma os dias do plano. Omitido = pagamento único.
    */
   autoRenew?: boolean
@@ -223,7 +223,7 @@ export interface SubscriptionRecurring {
   status: SubscriptionRecurringStatus
   tier: SubscriptionTier
   months: SubscriptionPlanMonths
-  /** Dias entre as cobranças (30, 90, 180 ou 360). */
+  /** Dias entre as cobranças (30, 90, 180 ou 365). */
   days: number
   /** Quando a renovação foi autorizada (ISO). */
   startedAt: string | null
