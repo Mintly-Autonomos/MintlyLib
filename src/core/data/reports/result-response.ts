@@ -54,11 +54,14 @@ export interface ResultLines {
 
 export type ResultLineKey = Exclude<keyof ResultLines, 'netMargin'>
 
-/** Item da composição das despesas operacionais (categoria ou a taxa de plataforma). */
+/**
+ * Item da composição das despesas operacionais: categoria, comissão dos apps de delivery (`platformFee`)
+ * ou taxa da maquininha (`cardFee`, S3.3).
+ */
 export interface OpexItem {
   categoryId: string | null
   name: string
-  kind: 'labor' | 'opex' | 'platformFee'
+  kind: 'labor' | 'opex' | 'platformFee' | 'cardFee'
   behavior: CategoryBehavior
   amount: number
   previousAmount: number

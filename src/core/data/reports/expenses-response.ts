@@ -14,7 +14,8 @@ export interface ExpensesQuery {
   channel?: MovementChannel.DineIn | MovementChannel.Delivery
 }
 
-export type ExpenseItemKind = 'category' | 'platformFee'
+/** `platformFee`: comissão de app de delivery; `cardFee`: taxa de maquininha (S3.3). */
+export type ExpenseItemKind = 'category' | 'platformFee' | 'cardFee'
 
 /** Subitem de uma categoria (fatia 7): uma subcategoria, ou "Sem subitem" (`key: 'none'`). */
 export interface ExpenseSubitem {
@@ -32,7 +33,7 @@ export interface ExpenseSubitem {
 
 /** Linha de "Para onde está indo seu dinheiro": categoria ou taxa de uma conta de plataforma. */
 export interface ExpenseItem {
-  /** categoryId, ou `platformFee:<accountId>`. */
+  /** categoryId, `platformFee:<accountId>` ou `cardFee:<accountId>`. */
   key: string
   kind: ExpenseItemKind
   categoryId: string | null
@@ -64,6 +65,7 @@ export interface ExpensesTotal {
   deltaAverage3: number | null
 }
 
+/** Comissão dos apps de delivery (contas plataforma do tipo `marketplace`). */
 export interface ExpensesPlatformFee {
   amount: number
   previous: number
@@ -72,6 +74,17 @@ export interface ExpensesPlatformFee {
   deliveryRevenue: number
   /** Taxa / Σ receita bruta das contas de plataforma (a taxa e a venda que a gerou no mesmo denominador). */
   pctOfDelivery: number | null
+}
+
+/** Taxa das maquininhas (contas plataforma do tipo `cardMachine`, S3.3). */
+export interface ExpensesCardFee {
+  amount: number
+  previous: number
+  deltaPrevious: number | null
+  /** Σ receita bruta que entrou pelas maquininhas no mês. */
+  cardRevenue: number
+  /** Taxa / receita das maquininhas (a taxa efetiva média). */
+  pctOfCardRevenue: number | null
 }
 
 /** Gasto atípico do mês ("Fique de olho"). Regra em `ExpensesReport.anomalyRule`. */
@@ -115,6 +128,7 @@ export interface ExpensesReport {
   cmv: { amount: number; pctOfRevenue: number | null; target: { min: number; max: number } }
   primeCost: { amount: number; cmv: number; labor: number; pctOfRevenue: number | null; targetMax: number }
   platformFee: ExpensesPlatformFee
+  cardFee: ExpensesCardFee
   /** Misto separado (a tela mostra "Misto"). */
   byBehavior: { fixed: number; variable: number; mixed: number }
   items: ExpenseItem[]
