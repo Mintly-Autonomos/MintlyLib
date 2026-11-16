@@ -10,6 +10,8 @@ import type {
   MovementListQuery,
   FinancialMovementActionResult,
   ChangeMovementStatusRequest,
+  TransferRequest,
+  TransferResult,
 } from '../core/data/financial/financial-movement-response'
 
 /**
@@ -59,6 +61,15 @@ export class FinancialMovementClient {
   ): Promise<ResponseDto<FinancialMovement>> {
     const body: ChangeMovementStatusRequest = { status, ...options }
     const response = await this.http.connection.patch<ResponseDto<FinancialMovement>>(`/${id}/status`, body, withHeaders(headers))
+    return response.data
+  }
+
+  /**
+   * Transferência entre contas do restaurante (S3.2): cria a saída na conta de origem e a entrada na de
+   * destino, ligadas pelo mesmo `transferId`. Cancelar um dos lados cancela os dois.
+   */
+  async transfer (body: TransferRequest, headers: Headers): Promise<ResponseDto<TransferResult>> {
+    const response = await this.http.connection.post<ResponseDto<TransferResult>>('/transfers', body, withHeaders(headers))
     return response.data
   }
 

@@ -53,6 +53,20 @@ export const subcategoryInsertSchema = s.object({ name: s.string().max(60) })
 /** Corpo de PATCH /financial-categories/:id/subcategories/:subId (status vai por inactivate/reactivate). */
 export const subcategoryUpdateSchema = s.object({ name: s.string().max(60) }).partial()
 
+/**
+ * Categorias que o próprio sistema cria e usa (relatório Sweetie Bel, S3.2). O dono não as escolhe nem
+ * edita: servem para lançamentos que mexem no saldo das contas sem ser venda nem custo.
+ * - `transferOut` / `transferIn`: os dois lados de uma transferência entre contas do restaurante;
+ * - `openingBalance`: o saldo com que a conta começou no Mintly.
+ * Têm Natureza "Não operacional" (ficam fora do lucro, dos custos, das receitas e do imposto) e, além
+ * disso, não aparecem nas linhas de não operacional do Resultado nem nas entradas × saídas do caixa.
+ */
+export enum SystemCategoryKey {
+  TransferOut = 'transferOut',
+  TransferIn = 'transferIn',
+  OpeningBalance = 'openingBalance',
+}
+
 const baseCategorySchema = s.object({
   restaurantId: s.string(),
   name: s.string(),
@@ -60,6 +74,8 @@ const baseCategorySchema = s.object({
   operationalNature: s.type().enum(OperationalNature),
   status: s.type().enum(RecordStatus),
   isSystem: s.boolean(),
+  // Só nas categorias do sistema de transferência e saldo inicial (ver SystemCategoryKey).
+  systemKey: s.type().enum(SystemCategoryKey).optional(),
   // Denormalizado p/ SuggestCategoriesQuery (heurística recência+frequência).
   // Mantido pelo RegisterMovementUseCase (MIN-49/50), não editável via CRUD.
   usage: s.number().int().default(0),
