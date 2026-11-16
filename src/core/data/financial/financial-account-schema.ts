@@ -2,6 +2,7 @@ import { Sapphire } from '@ascendance-hub/sapphire-core'
 import { RecordStatus } from '../common/status'
 import { auditSchema } from '../common/audit'
 import { settlementRuleSchema } from './settlement-rule'
+import { PlatformKind, feeByMethodSchema } from './platform-kind'
 
 const s = new Sapphire()
 
@@ -35,6 +36,9 @@ export const baseAccountSchema = s.object({
 const platformAccountSchema = baseAccountSchema.extend({
   type: s.type().literal(FinancialAccountType.Platform), // Força a ser 'platform'
   feePercent: s.number().min(0).max(100), // Obrigatório — taxa fracionária (ex.: 12.5%), 0..100
+  // S3.3: app de delivery ou maquininha (ausente = app) e taxa por forma de pagamento (por cima do feePercent).
+  platformKind: s.type().enum(PlatformKind).optional(),
+  feeByMethod: feeByMethodSchema.optional(),
   // Quando a plataforma repassa. Vale a `settlementRule`; contas antigas só têm `settlementDays`
   // ("N dias após a venda"). Que ao menos um dos dois exista é conferido na API (account-rules.ts).
   settlementDays: s.number().int().min(0).optional(),
@@ -77,6 +81,8 @@ export const financialAccountUpdateSchema = s.object({
   name: s.string(),
   status: s.type().enum(RecordStatus),
   feePercent: s.number().min(0).max(100),
+  platformKind: s.type().enum(PlatformKind),
+  feeByMethod: feeByMethodSchema,
   settlementDays: s.number().int().min(0),
   settlementRule: settlementRuleSchema,
 }).partial()
@@ -99,6 +105,8 @@ const baseAccountInsertSchema = s.object({
 const platformAccountInsertSchema = baseAccountInsertSchema.extend({
   type: s.type().literal(FinancialAccountType.Platform),
   feePercent: s.number().min(0).max(100),
+  platformKind: s.type().enum(PlatformKind).optional(),
+  feeByMethod: feeByMethodSchema.optional(),
   settlementDays: s.number().int().min(0).optional(),
   settlementRule: settlementRuleSchema.optional(),
 })

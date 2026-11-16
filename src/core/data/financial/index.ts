@@ -1,6 +1,10 @@
 export { FinancialAccount } from './financial-account-entity'
 export { financialAccountSchema, financialAccountInsertSchema, FinancialAccountType } from './financial-account-schema'
 export { financialAccountUpdateSchema } from './financial-account-schema'
+export { PlatformKind, feeByMethodSchema } from './platform-kind'
+export type { FeeByMethod } from './platform-kind'
+export { FEE_PAYMENT_METHODS, platformKindOf, platformFeePercent } from './platform-fee'
+export type { PlatformFeeAccount } from './platform-fee'
 export {
   settlementRuleSchema,
   SettlementRuleKind,
