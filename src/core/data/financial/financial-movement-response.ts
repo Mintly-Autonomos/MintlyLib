@@ -45,6 +45,10 @@ export interface RegisterMovementRequest {
   /** Subcategoria da categoria escolhida; tem que estar ativa. */
   subcategoryId?: string
   channel?: MovementChannel
+  /** Hora da venda (`HH:MM`). Só em entrada. */
+  saleTime?: string
+  /** Quantas vendas o lançamento soma (padrão 1). Só em entrada. */
+  salesCount?: number
   /**
    * Vencimento (`AAAA-MM-DD`): o dia em que o dinheiro entra/sai. Ausente = à vista (nasce
    * liquidado). Em conta de plataforma o servidor calcula (`date` + prazo) se não vier.
@@ -80,6 +84,10 @@ export interface UpdateMovementRequest {
   subcategoryId?: string | null
   /** `null` limpa (volta ao canal efetivo). */
   channel?: MovementChannel | null
+  /** `null` limpa a hora. Só em entrada. */
+  saleTime?: string | null
+  /** `null` volta ao padrão (1 venda). Só em entrada. */
+  salesCount?: number | null
   /** `null` limpa o vencimento (vira à vista); a API valida o documento resultante. */
   dueDate?: string | Date | null
 }

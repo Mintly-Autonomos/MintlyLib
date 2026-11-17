@@ -1,5 +1,5 @@
 import type { CategoryBehavior, DreGroup } from '../financial/financial-category-schema'
-import type { MovementChannel } from '../financial/financial-movement-schema'
+import type { MovementChannel, SalesChannel } from '../financial/financial-movement-schema'
 import type { ReportComparison } from './result-response'
 
 /**
@@ -11,7 +11,7 @@ import type { ReportComparison } from './result-response'
 /** `month` em AAAA-MM (padrão: mês corrente). Sem `channel` = Geral. */
 export interface ExpensesQuery {
   month?: string
-  channel?: MovementChannel.DineIn | MovementChannel.Delivery
+  channel?: SalesChannel
 }
 
 /** `platformFee`: comissão de app de delivery; `cardFee`: taxa de maquininha (S3.3). */

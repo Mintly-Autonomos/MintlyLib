@@ -64,7 +64,11 @@ export {
   MovementOrigin,
   CounterpartyKind,
   MovementChannel,
+  SALES_CHANNELS,
+  SALE_TIME_PATTERN,
+  SALES_COUNT_MAX,
 } from './financial-movement-schema'
+export type { SalesChannel } from './financial-movement-schema'
 export type {
   RegisterMovementRequest,
   UpdateMovementRequest,
