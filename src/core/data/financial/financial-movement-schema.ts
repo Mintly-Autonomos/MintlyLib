@@ -61,12 +61,27 @@ export enum MovementStatusSource {
  * Canal da movimentação (M3, fatia 5). Opcional: ausente, os relatórios usam o
  * canal efetivo (entrada em plataforma → delivery; outra entrada → dineIn;
  * saída → shared). `shared` = da casa inteira (aluguel, energia, contador).
+ * `orders` = encomendas (S3.4): só quando o dono escolhe, nunca é o padrão.
  */
 export enum MovementChannel {
   DineIn = 'dineIn',
   Delivery = 'delivery',
+  Orders = 'orders',
   Shared = 'shared',
 }
+
+/** Canais de venda (os que um relatório pode filtrar); `shared` fica de fora. */
+export const SALES_CHANNELS = [MovementChannel.DineIn, MovementChannel.Delivery, MovementChannel.Orders] as const
+export type SalesChannel = typeof SALES_CHANNELS[number]
+
+/** Hora da venda (S3.4), `HH:MM` de 00:00 a 23:59. */
+export const SALE_TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/
+
+/** Máximo de vendas num lançamento (fechamento do dia). */
+export const SALES_COUNT_MAX = 9999
+
+const saleTimeSchema = s.string().regex(SALE_TIME_PATTERN, { message: 'Hora da venda no formato HH:MM.' })
+const salesCountSchema = s.number().int().min(1).max(SALES_COUNT_MAX)
 
 export enum CounterpartyKind {
   Client = 'client',
@@ -204,6 +219,10 @@ const baseMovementSchema = s.object({
 // Entrada: categoria precisa ser de receita (revenue).
 const inMovementSchema = baseMovementSchema.extend({
   direction: s.type().literal(MovementDirection.In),
+  /** Hora da venda (`HH:MM`, S3.4). Ausente em fechamento do dia e em dado antigo. */
+  saleTime: saleTimeSchema.optional(),
+  /** Quantas vendas este lançamento soma (S3.4). Ausente = 1. Base do ticket médio. */
+  salesCount: salesCountSchema.optional(),
   category: s.object({
     _id: s.string(),
     name: s.string(),
@@ -263,6 +282,9 @@ export const registerMovementSchema = s.object({
   // Fatia 5: subcategoria da categoria escolhida (ativa) e canal, ambos opcionais.
   subcategoryId: s.string().optional(),
   channel: s.type().enum(MovementChannel).optional(),
+  // S3.4: só em entrada (a API recusa em saída).
+  saleTime: saleTimeSchema.optional(),
+  salesCount: salesCountSchema.optional(),
 })
 
 /**
@@ -284,6 +306,8 @@ export const updateMovementSchema = s.object({
   items: s.array(movementItemInputSchema).max(MOVEMENT_ITEMS_MAX),
   subcategoryId: s.string(),
   channel: s.type().enum(MovementChannel),
+  saleTime: saleTimeSchema,
+  salesCount: salesCountSchema,
 }).partial()
 
 /**
