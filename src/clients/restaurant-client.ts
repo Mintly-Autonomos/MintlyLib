@@ -46,16 +46,30 @@ export class RestaurantClient {
     return response.data
   }
 
-  /** Cria um login de funcionário (e-mail + senha). Só o dono. */
+  /** Convida um funcionário (nome, e-mail e perfil): ele recebe o link por e-mail. Só o dono. */
   async createMember (body: MemberCreateRequest, headers: Headers): Promise<ResponseDto<RestaurantMember>> {
     const response = await this.http.connection.post<ResponseDto<RestaurantMember>>('/me/members', body, withHeaders(headers))
     return response.data
   }
 
-  /** Ativa/inativa um funcionário e/ou define uma senha nova para ele. Só o dono. */
+  /** Ativa/inativa, muda nome, e-mail ou perfil de um funcionário. Só o dono. */
   async updateMember (id: string, body: MemberUpdateRequest, headers: Headers): Promise<ResponseDto<RestaurantMember>> {
     const response = await this.http.connection.patch<ResponseDto<RestaurantMember>>(`/me/members/${id}`, body, withHeaders(headers))
     return response.data
+  }
+
+  /** Reenvia o convite (link novo; o anterior deixa de valer). Só para funcionário com convite pendente. Só o dono. */
+  async resendInvite (id: string, headers: Headers): Promise<ResponseDto<RestaurantMember>> {
+    const response = await this.http.connection.post<ResponseDto<RestaurantMember>>(`/me/members/${id}/invite`, {}, withHeaders(headers))
+    return response.data
+  }
+
+  /**
+   * Exclui o funcionário: perde o acesso na hora, sai da lista e libera a vaga e o e-mail. Os lançamentos que
+   * ele fez continuam com o nome dele no histórico. Só o dono.
+   */
+  async deleteMember (id: string, headers: Headers): Promise<void> {
+    await this.http.connection.delete(`/me/members/${id}`, withHeaders(headers))
   }
 
   /**

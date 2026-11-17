@@ -2,6 +2,7 @@ import { Sapphire } from '@ascendance-hub/sapphire-core'
 import type { Infer } from '@ascendance-hub/sapphire-core'
 import { passwordSchema } from '../auth/password-policy'
 import type { UserRole } from '../user/user-schema'
+import { MemberProfile } from '../user/member-profile'
 
 const s = new Sapphire()
 
@@ -33,19 +34,30 @@ export const changePasswordRequestSchema = s.object({
 export enum MemberStatus {
   Active = 'active',
   Inactive = 'inactive',
+  /** Convite enviado; o funcionário ainda não criou a senha (E.1). */
+  Invited = 'invited',
 }
 
-/** Corpo do `POST /restaurants/me/members`: cria um login de funcionário (papel `member`) no restaurante. */
+/**
+ * Corpo do `POST /restaurants/me/members`: convida um funcionário (papel `member`). Não leva senha: o
+ * funcionário recebe um link por e-mail e cria a dele (E.1). Sem `profile`, vale Operação.
+ */
 export const memberCreateRequestSchema = s.object({
   name: s.string().min(2, { message: 'O nome deve ter pelo menos 2 caracteres.' }),
   email: s.string().email({ message: 'Informe um e-mail válido.' }),
-  password: passwordSchema,
+  profile: s.type().enum(MemberProfile).optional(),
 })
 
-/** Corpo do `PATCH /restaurants/me/members/:id`: ativar/inativar e/ou definir uma senha nova. */
+/**
+ * Corpo do `PATCH /restaurants/me/members/:id`: ativar/inativar, nome, e-mail e perfil (E.2, E.3). O dono
+ * não define mais a senha do funcionário: quem esqueceu usa "Esqueci minha senha". `invited` não é aceito
+ * aqui (o convite é reenviado por `POST /restaurants/me/members/:id/invite`).
+ */
 export const memberUpdateRequestSchema = s.object({
   status: s.type().enum(MemberStatus),
-  password: passwordSchema,
+  name: s.string().min(2, { message: 'O nome deve ter pelo menos 2 caracteres.' }),
+  email: s.string().email({ message: 'Informe um e-mail válido.' }),
+  profile: s.type().enum(MemberProfile),
 }).partial()
 
 /** Corpo do `POST /restaurants/me/deletion-request`: pedir a exclusão do restaurante, confirmando com a senha. */
@@ -67,6 +79,8 @@ export interface MyAccount {
   email: string
   phone: string
   role: UserRole
+  /** Só funcionário: o perfil de acesso (ausente no dono). */
+  memberProfile?: MemberProfile
   avatar?: string
 }
 
@@ -76,6 +90,9 @@ export interface RestaurantMember {
   name: string
   email: string
   status: MemberStatus
+  profile: MemberProfile
+  /** Só com `status: invited`: até quando o link do convite vale. */
+  inviteExpiresAt?: Date | string
   lastAccessAt?: Date | string
   createdAt?: Date | string
 }
