@@ -7,6 +7,7 @@ import {
   memberUpdateRequestSchema,
   MemberStatus,
 } from './account-schema'
+import { MemberProfile } from '../user/member-profile'
 import { restaurantSchema } from '../restaurant/restaurant-schema'
 
 const audit = { createdAt: new Date('2026-10-01T00:00:00.000Z'), updatedAt: new Date('2026-10-01T00:00:00.000Z') }
@@ -53,27 +54,36 @@ describe('changePasswordRequestSchema', () => {
 })
 
 describe('memberCreateRequestSchema', () => {
-  it('nome, e-mail e senha forte', () => {
-    expect(memberCreateRequestSchema.safeParse({ name: 'Ana', email: 'ana@teste.com', password: 'Senha#12345' }).success).toBe(true)
-    expect(memberCreateRequestSchema.safeParse({ name: 'A', email: 'ana@teste.com', password: 'Senha#12345' }).success).toBe(false)
-    expect(memberCreateRequestSchema.safeParse({ name: 'Ana', email: 'ana', password: 'Senha#12345' }).success).toBe(false)
-    expect(memberCreateRequestSchema.safeParse({ name: 'Ana', email: 'ana@teste.com', password: 'fraca' }).success).toBe(false)
+  it('convite: nome e e-mail, perfil opcional (E.1, E.3)', () => {
+    expect(memberCreateRequestSchema.safeParse({ name: 'Ana', email: 'ana@teste.com' }).success).toBe(true)
+    expect(memberCreateRequestSchema.safeParse({ name: 'Ana', email: 'ana@teste.com', profile: MemberProfile.Operations }).success).toBe(true)
+    expect(memberCreateRequestSchema.safeParse({ name: 'Ana', email: 'ana@teste.com', profile: MemberProfile.Manager }).success).toBe(true)
+    expect(memberCreateRequestSchema.safeParse({ name: 'A', email: 'ana@teste.com' }).success).toBe(false)
+    expect(memberCreateRequestSchema.safeParse({ name: 'Ana', email: 'ana' }).success).toBe(false)
+    expect(memberCreateRequestSchema.safeParse({ name: 'Ana', email: 'ana@teste.com', profile: 'admin' }).success).toBe(false)
   })
 
-  it('não aceita papel nem restaurante vindo do cliente (o servidor decide)', () => {
-    expect(memberCreateRequestSchema.safeParse({ name: 'Ana', email: 'ana@teste.com', password: 'Senha#12345', role: 'owner' }).success).toBe(false)
-    expect(memberCreateRequestSchema.safeParse({ name: 'Ana', email: 'ana@teste.com', password: 'Senha#12345', restaurantId: 'x' }).success).toBe(false)
+  it('o dono não define a senha; papel e restaurante não vêm do cliente', () => {
+    expect(memberCreateRequestSchema.safeParse({ name: 'Ana', email: 'ana@teste.com', password: 'Senha#12345' }).success).toBe(false)
+    expect(memberCreateRequestSchema.safeParse({ name: 'Ana', email: 'ana@teste.com', role: 'owner' }).success).toBe(false)
+    expect(memberCreateRequestSchema.safeParse({ name: 'Ana', email: 'ana@teste.com', restaurantId: 'x' }).success).toBe(false)
   })
 })
 
 describe('memberUpdateRequestSchema', () => {
-  it('ativa/inativa e/ou troca a senha; bloqueio não é do dono', () => {
+  it('ativa/inativa, nome, e-mail e perfil (E.2, E.3); bloqueio não é do dono', () => {
     expect(memberUpdateRequestSchema.safeParse({}).success).toBe(true)
     expect(memberUpdateRequestSchema.safeParse({ status: MemberStatus.Inactive }).success).toBe(true)
-    expect(memberUpdateRequestSchema.safeParse({ password: 'Senha#12345' }).success).toBe(true)
+    expect(memberUpdateRequestSchema.safeParse({ name: 'Ana Paula', email: 'ana.paula@teste.com' }).success).toBe(true)
+    expect(memberUpdateRequestSchema.safeParse({ profile: MemberProfile.Operations }).success).toBe(true)
     expect(memberUpdateRequestSchema.safeParse({ status: 'blocked' }).success).toBe(false)
-    expect(memberUpdateRequestSchema.safeParse({ password: 'fraca' }).success).toBe(false)
-    expect(memberUpdateRequestSchema.safeParse({ email: 'x@y.com' }).success).toBe(false)
+    expect(memberUpdateRequestSchema.safeParse({ email: 'x' }).success).toBe(false)
+    expect(memberUpdateRequestSchema.safeParse({ name: 'A' }).success).toBe(false)
+    expect(memberUpdateRequestSchema.safeParse({ profile: 'admin' }).success).toBe(false)
+  })
+
+  it('a senha não é mais do dono', () => {
+    expect(memberUpdateRequestSchema.safeParse({ password: 'Senha#12345' }).success).toBe(false)
   })
 })
 

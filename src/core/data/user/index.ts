@@ -1,2 +1,5 @@
 export { User } from './user-entity'
 export { userSchema, UserStatus, UserRole } from './user-schema'
+export { MemberProfile, MEMBER_PROFILE_DEFAULT, MEMBER_PROFILE_LABEL } from './member-profile'
+export { accessLevelOf, canViewReports, canManageSetup, canSeePersonnel } from './access-level'
+export type { AccessLevel } from './access-level'

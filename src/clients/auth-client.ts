@@ -7,6 +7,7 @@ import type { SignupRequest } from '../core/data/auth/signup-schema'
 import type { LoginRequest } from '../core/data/auth/login-schema'
 import type { SignupResult, LoginResult, RefreshResult, RecoveryMessageResult } from '../core/data/auth/auth-response'
 import type { ResetPasswordRequest } from '../core/data/auth/reset-password-request'
+import type { AcceptInviteRequest, InvitePreview } from '../core/data/auth/member-invite'
 
 /**
  * Cliente de autenticação (RPC, não CRUD): cadastro, login, refresh e logout.
@@ -50,6 +51,18 @@ export class AuthClient {
   /** Redefine a senha a partir do token recebido por e-mail. */
   async resetPassword (body: ResetPasswordRequest, headers: Headers): Promise<ResponseDto<RecoveryMessageResult>> {
     const response = await this.connection.post<ResponseDto<RecoveryMessageResult>>('/reset-password', body, withHeaders(headers))
+    return response.data
+  }
+
+  /** Para quem é o convite do link (nome, e-mail, restaurante). Token inválido, usado ou vencido → 401. */
+  async invitePreview (token: string, headers: Headers): Promise<ResponseDto<InvitePreview>> {
+    const response = await this.connection.post<ResponseDto<InvitePreview>>('/invite/preview', { token }, withHeaders(headers))
+    return response.data
+  }
+
+  /** Aceita o convite: cria a senha e ativa o login do funcionário (depois ele entra pelo login normal). */
+  async acceptInvite (body: AcceptInviteRequest, headers: Headers): Promise<ResponseDto<RecoveryMessageResult>> {
+    const response = await this.connection.post<ResponseDto<RecoveryMessageResult>>('/invite/accept', body, withHeaders(headers))
     return response.data
   }
 }

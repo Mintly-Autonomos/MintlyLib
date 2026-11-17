@@ -41,13 +41,25 @@ describe('RestaurantClient', () => {
     expect(get).toHaveBeenCalledWith('/me/members', expect.anything())
   })
 
-  it('createMember faz POST /me/members com nome, e-mail e senha', async () => {
+  it('createMember faz POST /me/members com nome, e-mail e perfil', async () => {
     const client = new RestaurantClient()
     const post = jest.spyOn((client as any).http.connection, 'post').mockResolvedValue({ data: { payload: {} } } as any)
 
-    await client.createMember({ name: 'Ana', email: 'ana@teste.com', password: 'Senha#12345' }, headers)
+    await client.createMember({ name: 'Ana', email: 'ana@teste.com', profile: 'operations' as any }, headers)
 
-    expect(post).toHaveBeenCalledWith('/me/members', { name: 'Ana', email: 'ana@teste.com', password: 'Senha#12345' }, expect.anything())
+    expect(post).toHaveBeenCalledWith('/me/members', { name: 'Ana', email: 'ana@teste.com', profile: 'operations' }, expect.anything())
+  })
+
+  it('resendInvite faz POST /me/members/:id/invite e deleteMember faz DELETE /me/members/:id', async () => {
+    const client = new RestaurantClient()
+    const post = jest.spyOn((client as any).http.connection, 'post').mockResolvedValue({ data: { payload: {} } } as any)
+    const del = jest.spyOn((client as any).http.connection, 'delete').mockResolvedValue({ data: {} } as any)
+
+    await client.resendInvite('abc123', headers)
+    await client.deleteMember('abc123', headers)
+
+    expect(post).toHaveBeenCalledWith('/me/members/abc123/invite', {}, expect.anything())
+    expect(del).toHaveBeenCalledWith('/me/members/abc123', expect.anything())
   })
 
   it('updateMember faz PATCH /me/members/:id', async () => {
