@@ -1,6 +1,7 @@
 import { Sapphire } from '@ascendance-hub/sapphire-core'
 import { RecordStatus } from '../common/status'
 import { auditSchema } from '../common/audit'
+import { PriceSensitivity } from './sales-profile'
 
 const s = new Sapphire()
 
@@ -26,6 +27,8 @@ export const menuItemSchema = s.object({
   cost: s.number().min(0).default(0),
   /** Quantas unidades saem por mês, informado pelo dono. Base da popularidade na análise de cardápio. */
   soldPerMonth: s.number().int().min(0).default(0),
+  /** Sensibilidade a preço escolhida para ESTE prato (sobrepõe o perfil da categoria). Ausente = a da categoria. */
+  priceSensitivity: s.type().enum(PriceSensitivity).optional(),
   status: s.type().enum(RecordStatus),
   /** Última vez que o VALOR mudou (ou o cadastro, se nunca mudou). */
   priceUpdatedAt: s.date().coerce(),
@@ -49,6 +52,8 @@ export const menuItemUpdateSchema = s.object({
   category: s.string().max(40),
   cost: s.number().min(0),
   soldPerMonth: s.number().int().min(0),
+  /** `null` volta a usar o perfil da categoria. */
+  priceSensitivity: s.type().enum(PriceSensitivity),
 }).partial()
 
 /** Corpo de PATCH /menu-items/:id/price. */

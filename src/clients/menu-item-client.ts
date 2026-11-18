@@ -10,6 +10,7 @@ import type {
   MenuItemPriceAlert,
   MenuItemUpdateRequest,
 } from '../core/data/menu/menu-item-response'
+import type { MenuCategoryProfile, MenuCategoryProfilesResponse } from '../core/data/menu/sales-profile'
 
 /**
  * Cardápio (pratos com preço). A rota /menu-items NÃO expõe GET /:id nem DELETE (só inativação).
@@ -46,6 +47,18 @@ export class MenuItemClient implements Findable<MenuItem>, Listable<MenuItem> {
   /** "Não quero mudar": mantém o valor e conta como revisão (silencia o aviso). Não recebe corpo. */
   async keepPrice (id: string, headers: Headers): Promise<ResponseDto<MenuItem>> {
     const response = await this.http.connection.post<ResponseDto<MenuItem>>(`/${id}/price-review`, undefined, withHeaders(headers))
+    return response.data
+  }
+
+  /** Perfil de venda escolhido para cada categoria do cardápio. */
+  async categoryProfiles (headers: Headers): Promise<ResponseDto<MenuCategoryProfilesResponse>> {
+    const response = await this.http.connection.get<ResponseDto<MenuCategoryProfilesResponse>>('/category-profiles', withHeaders(headers))
+    return response.data
+  }
+
+  /** Troca a lista inteira dos perfis por categoria (dono ou gerente). */
+  async saveCategoryProfiles (profiles: MenuCategoryProfile[], headers: Headers): Promise<ResponseDto<MenuCategoryProfilesResponse>> {
+    const response = await this.http.connection.put<ResponseDto<MenuCategoryProfilesResponse>>('/category-profiles', { profiles }, withHeaders(headers))
     return response.data
   }
 
