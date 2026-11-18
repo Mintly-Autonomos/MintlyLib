@@ -16,6 +16,23 @@ export enum TaxRegime {
   SimplesNacionalAnexoII = 'simplesNacionalAnexoII',
 }
 
+/** Limites da equipe (P.4). */
+export const TEAM_MAX_MEMBERS = 50
+export const TEAM_MAX_WEEKLY_HOURS = 112
+
+/**
+ * Pessoa da equipe para a recomendação de contratação (P.4): nome e carga semanal do contrato. Não é login:
+ * inclui o dono e quem não usa o app (os acessos ficam em `users`, com convite).
+ */
+export const teamMemberSchema = s.object({
+  name: s.string().min(1, { message: 'Informe o nome.' }).max(80, { message: 'O nome deve ter no máximo 80 caracteres.' }),
+  weeklyHours: s.number()
+    .min(1, { message: 'Informe as horas por semana.' })
+    .max(TEAM_MAX_WEEKLY_HOURS, { message: `No máximo ${TEAM_MAX_WEEKLY_HOURS} horas por semana.` }),
+})
+
+const teamSchema = s.array(teamMemberSchema).max(TEAM_MAX_MEMBERS, { message: `No máximo ${TEAM_MAX_MEMBERS} pessoas na equipe.` })
+
 export const restaurantSchema = s.object({
   name: s.string(),
   taxRegime: s.type().enum(TaxRegime).optional(),
@@ -30,6 +47,8 @@ export const restaurantSchema = s.object({
    * sem pedido. É só um pedido: nada é apagado até ser analisado, e o dono pode cancelar.
    */
   deletionRequestedAt: s.date().coerce().optional(),
+  /** Equipe e carga semanal (P.4). Ausente = não informada (a recomendação de contratação fica oculta). */
+  team: teamSchema.optional(),
   audit: auditSchema,
 })
 
@@ -38,4 +57,6 @@ export const restaurantSchema = s.object({
 export const restaurantUpdateSchema = s.object({
   name: s.string(),
   taxRegime: s.type().enum(TaxRegime),
+  /** Substitui a lista inteira. */
+  team: teamSchema,
 }).partial()
