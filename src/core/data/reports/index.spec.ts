@@ -35,6 +35,8 @@ describe('barrel de reports', () => {
     const label: reports.HealthLabel = 'noData'
     const query: reports.OverviewQuery = { month: '2026-07' }
     expect([pillar.key, insight.kind, label, query.month]).toEqual(['runway', 'breakEvenReached', 'noData', '2026-07'])
+    const dividas: reports.HealthPillar = { key: 'debts', weight: 0.15, score: 100, value: 0 }
+    expect(dividas.key).toBe('debts')
   })
 
   it('exporta o histórico de 12 meses e o mesmo mês do ano anterior do Resultado', () => {
