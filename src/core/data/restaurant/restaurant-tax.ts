@@ -1,5 +1,5 @@
 import type { TaxRegime } from './restaurant-schema'
-import type { Restaurant } from './restaurant-entity'
+import type { Restaurant, TeamMember } from './restaurant-entity'
 
 /** Faixa da tabela do Simples Nacional (Anexo I ou II, conforme o regime). `upTo` inclusivo. */
 export interface TaxBracket {
@@ -45,4 +45,6 @@ export interface RestaurantProfileResponse {
 export interface RestaurantUpdateRequest {
   name?: string
   taxRegime?: TaxRegime
+  /** Equipe e carga semanal (P.4). Substitui a lista inteira. */
+  team?: TeamMember[]
 }
