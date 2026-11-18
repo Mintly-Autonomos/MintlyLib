@@ -23,7 +23,11 @@ export interface OverviewCards {
 }
 
 export type HealthLabel = 'risk' | 'attention' | 'healthy' | 'noData'
-export type HealthPillarKey = 'netMargin' | 'runway' | 'primeCost' | 'revenueTrend'
+/**
+ * Pilares da nota. `debts` (relatório Sweetie Bel): contas a pagar vencidas ÷ despesa do mês-base (`value` é a
+ * fração; 0 = nada vencido). Entra na média com o próprio peso e a conta vencida continua travando a nota.
+ */
+export type HealthPillarKey = 'netMargin' | 'runway' | 'primeCost' | 'revenueTrend' | 'debts'
 
 /** Pilar do score (N5 — palpite). `score` null = sem dado (fora da média). */
 export interface HealthPillar {
