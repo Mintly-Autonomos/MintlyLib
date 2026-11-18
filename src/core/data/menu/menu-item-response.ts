@@ -1,6 +1,7 @@
 import type { Infer } from '@ascendance-hub/sapphire-core'
 import type { MenuItem } from './menu-item-entity'
 import type { menuItemInsertSchema, menuItemUpdateSchema } from './menu-item-schema'
+import type { PriceSensitivity } from './sales-profile'
 
 /** Resposta das rotas de ação (inactivate/reactivate) — apenas a mensagem ao usuário. */
 export interface MenuItemActionResult {
@@ -11,7 +12,10 @@ export interface MenuItemActionResult {
 export type MenuItemInsertRequest = Infer<typeof menuItemInsertSchema>
 
 /** Corpo de PATCH /menu-items/:id (nome/categoria; o preço tem rota própria). */
-export type MenuItemUpdateRequest = Infer<typeof menuItemUpdateSchema>
+export type MenuItemUpdateRequest = Omit<Infer<typeof menuItemUpdateSchema>, 'priceSensitivity'> & {
+  /** `null` volta a usar o perfil da categoria. */
+  priceSensitivity?: PriceSensitivity | null
+}
 
 /** Corpo de PATCH /menu-items/:id/price. */
 export interface MenuItemPriceRequest {

@@ -1,5 +1,6 @@
 import { Sapphire } from '@ascendance-hub/sapphire-core'
 import { auditSchema } from '../common/audit'
+import { MENU_CATEGORY_PROFILES_MAX, menuCategoryProfileSchema } from '../menu/sales-profile'
 
 const s = new Sapphire()
 
@@ -49,6 +50,11 @@ export const restaurantSchema = s.object({
   deletionRequestedAt: s.date().coerce().optional(),
   /** Equipe e carga semanal (P.4). Ausente = não informada (a recomendação de contratação fica oculta). */
   team: teamSchema.optional(),
+  /**
+   * Perfil de venda de cada categoria do cardápio (elasticidade padrão do simulador de preço). Gravado pela rota
+   * `PUT /menu-items/category-profiles` (dono ou gerente), não pelo PATCH do restaurante. Ausente = nenhum escolhido.
+   */
+  menuCategoryProfiles: s.array(menuCategoryProfileSchema).max(MENU_CATEGORY_PROFILES_MAX).optional(),
   audit: auditSchema,
 })
 

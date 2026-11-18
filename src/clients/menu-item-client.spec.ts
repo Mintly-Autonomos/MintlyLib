@@ -3,7 +3,7 @@ import { MenuItemClient } from './menu-item-client'
 describe('MenuItemClient', () => {
   beforeAll(() => { process.env.BACK_END_URL = 'http://api.test' })
   const headers = { env: 'staging', authorization: 'Bearer t' } as any
-  const spy = (client: any, method: 'get' | 'post' | 'patch') => jest.spyOn(client.http.connection, method).mockResolvedValue({ data: { payload: {} } } as any)
+  const spy = (client: any, method: 'get' | 'post' | 'patch' | 'put') => jest.spyOn(client.http.connection, method).mockResolvedValue({ data: { payload: {} } } as any)
 
   it('insert → POST /', async () => {
     const c = new MenuItemClient()
@@ -24,6 +24,16 @@ describe('MenuItemClient', () => {
     const post = spy(c, 'post')
     await c.keepPrice('m1', headers)
     expect(post).toHaveBeenCalledWith('/m1/price-review', undefined, expect.anything())
+  })
+
+  it('perfis por categoria → GET e PUT /category-profiles', async () => {
+    const c = new MenuItemClient()
+    const get = spy(c, 'get')
+    const put = spy(c, 'put')
+    await c.categoryProfiles(headers)
+    await c.saveCategoryProfiles([{ category: 'Bebidas', profile: 'drink' as any }], headers)
+    expect(get).toHaveBeenCalledWith('/category-profiles', expect.anything())
+    expect(put).toHaveBeenCalledWith('/category-profiles', { profiles: [{ category: 'Bebidas', profile: 'drink' }] }, expect.anything())
   })
 
   it('priceAlerts → GET /price-alerts', async () => {
