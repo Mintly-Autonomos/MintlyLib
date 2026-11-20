@@ -4,6 +4,7 @@ import type { Headers } from '../core/data/request/headers'
 import type { CashFlowQuery, CashFlowReport } from '../core/data/reports/cash-flow-response'
 import type { ResultQuery, ResultReport } from '../core/data/reports/result-response'
 import type { ExpensesQuery, ExpensesReport } from '../core/data/reports/expenses-response'
+import type { TimeseriesQuery, TimeseriesReport } from '../core/data/reports/timeseries-response'
 
 /**
  * Relatórios de leitura (módulos novos). Só GETs próprios — compõe o
@@ -22,6 +23,12 @@ export class ReportClient {
   /** Resultado (DRE) do mês: linhas, composição, ponto de equilíbrio, histórico e insights. */
   async result (query: ResultQuery, headers: Headers): Promise<ResponseDto<ResultReport>> {
     const response = await this.http.connection.get<ResponseDto<ResultReport>>('/result', withHeaders(headers, { params: query }))
+    return response.data
+  }
+
+  /** Série por dia, semana ou mês (P.3): receita, custos, imposto, lucro e o dinheiro que entrou e saiu. */
+  async timeseries (query: TimeseriesQuery, headers: Headers): Promise<ResponseDto<TimeseriesReport>> {
+    const response = await this.http.connection.get<ResponseDto<TimeseriesReport>>('/timeseries', withHeaders(headers, { params: query }))
     return response.data
   }
 
