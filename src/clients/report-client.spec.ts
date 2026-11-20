@@ -15,6 +15,17 @@ describe('ReportClient', () => {
     expect(res.payload).toEqual({ horizon: 60 })
   })
 
+  it('timeseries faz GET /timeseries com a granularidade, os pontos e a comparação na query', async () => {
+    const client = new ReportClient()
+    const get = jest.spyOn((client as any).http.connection, 'get')
+      .mockResolvedValue({ data: { payload: { granularity: 'month', points: [], previousYear: [] } } } as any)
+
+    const res = await client.timeseries({ granularity: 'month', points: 12, compare: 'previousYear' }, { env: 'staging', authorization: 'Bearer t' } as any)
+
+    expect(get).toHaveBeenCalledWith('/timeseries', expect.objectContaining({ params: { granularity: 'month', points: 12, compare: 'previousYear' } }))
+    expect(res.payload).toEqual({ granularity: 'month', points: [], previousYear: [] })
+  })
+
   it('result faz GET /result com o mês na query e devolve o envelope', async () => {
     const client = new ReportClient()
     const get = jest.spyOn((client as any).http.connection, 'get')

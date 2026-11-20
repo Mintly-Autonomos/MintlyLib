@@ -1,4 +1,5 @@
 import type * as reports from './index'
+import { TIMESERIES_MAX_DAYS, TIMESERIES_MAX_MONTHS, TIMESERIES_MAX_WEEKS } from './index'
 
 // Contrato só de tipos: o teste é o typecheck destas atribuições.
 describe('barrel de reports', () => {
@@ -63,5 +64,14 @@ describe('barrel de reports', () => {
     const o = {} as reports.OverviewReport
     const pick: Array<reports.ReportComparison | undefined> = [r.comparison, e.comparison, o.comparison]
     expect([comparison.untilDay, insight.kind, due.kind, pick.length]).toEqual([13, 'cmvAboveTarget', 'platformPayout', 3])
+  })
+})
+
+describe('série temporal (P.3)', () => {
+  it('limites do seletor Dia / Semana / Mês / Ano', () => {
+    expect([TIMESERIES_MAX_DAYS, TIMESERIES_MAX_WEEKS, TIMESERIES_MAX_MONTHS]).toEqual([90, 52, 12])
+    const p: reports.TimeseriesPoint = { key: '2026-11', end: '2026-11-30', revenue: 100, cmv: 30, expenses: 20, taxes: 6, profit: 44, cashIn: 90, cashOut: 50 }
+    const r: reports.TimeseriesReport = { granularity: 'month', points: [p], previousYear: null }
+    expect(r.points[0]?.profit).toBe(p.revenue - p.taxes - p.cmv - p.expenses)
   })
 })
