@@ -12,9 +12,13 @@ export interface OverviewQuery {
   month?: string
 }
 
+/**
+ * `previousAmount`: o valor da base da comparação (mês anterior; no mês em andamento, os mesmos dias dele). Com a
+ * base negativa ou perto de zero a variação em % não diz nada (+34.399%): o web mostra a diferença em reais.
+ */
 export interface OverviewCards {
-  netProfit: { amount: number; delta: number | null; history: { month: string; amount: number }[] }
-  revenue: { amount: number; delta: number | null; history: { month: string; amount: number }[] }
+  netProfit: { amount: number; previousAmount: number | null; delta: number | null; history: { month: string; amount: number }[] }
+  revenue: { amount: number; previousAmount: number | null; delta: number | null; history: { month: string; amount: number }[] }
   cashToday: { amount: number; realized: { date: string; balance: number }[] }
   /** `runwayDays`: fôlego — caixa de hoje ÷ despesa média diária (dias inteiros). */
   projection: { horizon: number; balance: number; lowest: { date: string; balance: number }; runwayDays: number | null }

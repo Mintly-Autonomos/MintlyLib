@@ -1,5 +1,5 @@
 import type { TaxRegime } from './restaurant-schema'
-import type { Restaurant, TeamMember } from './restaurant-entity'
+import type { Restaurant, RevenueBeforeMintly, TeamMember } from './restaurant-entity'
 
 /** Faixa da tabela do Simples Nacional (Anexo I ou II, conforme o regime). `upTo` inclusivo. */
 export interface TaxBracket {
@@ -23,6 +23,11 @@ export interface RestaurantTaxProfile {
   rbt12: number
   monthsOfHistory: number
   rbt12Proportional: boolean
+  /**
+   * Primeiro mês de atividade usado no RBT12: o `activityStart` informado ou, sem ele, o primeiro mês com venda.
+   * null = nenhuma venda ainda.
+   */
+  activityStartMonth: string | null
   effectiveRate: number | null
   bracket: TaxBracket | null
   previousBracketIndex: number | null
@@ -47,4 +52,8 @@ export interface RestaurantUpdateRequest {
   taxRegime?: TaxRegime
   /** Equipe e carga semanal (P.4). Substitui a lista inteira. */
   team?: TeamMember[]
+  /** Mês de abertura (`AAAA-MM`); "" apaga. */
+  activityStart?: string
+  /** Faturamento antes do Mintly (até 12 meses). Substitui a lista inteira; [] apaga. */
+  revenueBeforeMintly?: RevenueBeforeMintly[]
 }

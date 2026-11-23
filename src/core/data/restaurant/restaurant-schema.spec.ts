@@ -1,4 +1,4 @@
-import { restaurantSchema, restaurantUpdateSchema, teamMemberSchema, TaxRegime, TEAM_MAX_MEMBERS, TEAM_MAX_WEEKLY_HOURS } from './restaurant-schema'
+import { restaurantSchema, restaurantUpdateSchema, revenueBeforeMintlySchema, REVENUE_BEFORE_MINTLY_MAX, teamMemberSchema, TaxRegime, TEAM_MAX_MEMBERS, TEAM_MAX_WEEKLY_HOURS } from './restaurant-schema'
 
 const audit = { createdAt: new Date('2026-10-01T00:00:00.000Z'), updatedAt: new Date('2026-10-01T00:00:00.000Z') }
 
@@ -36,6 +36,24 @@ describe('restaurantUpdateSchema', () => {
 
   it('é estrito: campo desconhecido é rejeitado', () => {
     expect(restaurantUpdateSchema.safeParse({ audit }).success).toBe(false)
+  })
+})
+
+describe('início da atividade e faturamento antes do Mintly (Simples, CGSN 140 art. 22)', () => {
+  it('aceita o mês de abertura, vazio para apagar, e recusa formato errado', () => {
+    expect(restaurantSchema.safeParse({ name: 'Cantina', audit, activityStart: '2024-03' }).success).toBe(true)
+    expect(restaurantUpdateSchema.safeParse({ activityStart: '' }).success).toBe(true)
+    expect(restaurantUpdateSchema.safeParse({ activityStart: '2024-13' }).success).toBe(false)
+    expect(restaurantUpdateSchema.safeParse({ activityStart: '03/2024' }).success).toBe(false)
+  })
+
+  it('o faturamento anterior tem mês e valor não negativo, até 12 meses', () => {
+    expect(revenueBeforeMintlySchema.safeParse({ month: '2025-10', amount: 42000.5 }).success).toBe(true)
+    expect(revenueBeforeMintlySchema.safeParse({ month: '2025-10', amount: -1 }).success).toBe(false)
+    expect(revenueBeforeMintlySchema.safeParse({ month: '2025-1', amount: 10 }).success).toBe(false)
+    expect(restaurantUpdateSchema.safeParse({ revenueBeforeMintly: [] }).success).toBe(true)
+    const treze = Array.from({ length: REVENUE_BEFORE_MINTLY_MAX + 1 }, (_, i) => ({ month: `2024-${String((i % 12) + 1).padStart(2, '0')}`, amount: 1 }))
+    expect(restaurantUpdateSchema.safeParse({ revenueBeforeMintly: treze }).success).toBe(false)
   })
 })
 

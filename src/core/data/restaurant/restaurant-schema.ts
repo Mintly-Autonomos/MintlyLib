@@ -32,6 +32,27 @@ export const teamMemberSchema = s.object({
     .max(TEAM_MAX_WEEKLY_HOURS, { message: `No máximo ${TEAM_MAX_WEEKLY_HOURS} horas por semana.` }),
 })
 
+/** Até quantos meses de faturamento anterior ao Mintly o dono informa (o RBT12 olha 12 meses). */
+export const REVENUE_BEFORE_MINTLY_MAX = 12
+
+/** Mês `AAAA-MM`. */
+const MONTH_PATTERN = /^\d{4}-(0[1-9]|1[0-2])$/
+
+/**
+ * Faturamento de um mês ANTES de o restaurante usar o Mintly (Simples Nacional: entra no RBT12 dos primeiros
+ * meses). Mês que já tem venda lançada no Mintly ignora este valor: vale o que foi lançado.
+ */
+export const revenueBeforeMintlySchema = s.object({
+  month: s.string().regex(MONTH_PATTERN, { message: 'Mês no formato AAAA-MM.' }),
+  amount: s.number().min(0, { message: 'O faturamento não pode ser negativo.' }),
+})
+
+const revenueBeforeSchema = s.array(revenueBeforeMintlySchema)
+  .max(REVENUE_BEFORE_MINTLY_MAX, { message: `No máximo ${REVENUE_BEFORE_MINTLY_MAX} meses.` })
+
+/** Mês de abertura da empresa (`AAAA-MM`); string vazia = não informado. */
+const activityStartSchema = s.string().regex(/^(\d{4}-(0[1-9]|1[0-2]))?$/, { message: 'Mês no formato AAAA-MM.' })
+
 const teamSchema = s.array(teamMemberSchema).max(TEAM_MAX_MEMBERS, { message: `No máximo ${TEAM_MAX_MEMBERS} pessoas na equipe.` })
 
 export const restaurantSchema = s.object({
@@ -51,6 +72,15 @@ export const restaurantSchema = s.object({
   /** Equipe e carga semanal (P.4). Ausente = não informada (a recomendação de contratação fica oculta). */
   team: teamSchema.optional(),
   /**
+   * Início da atividade (CGSN 140/2018, art. 22). No Simples, o RBT12 dos 12 primeiros meses é proporcional:
+   * no mês de início, a receita do mês × 12 (§2º); depois, a média dos meses anteriores × 12 (§3º). Ausente ou
+   * vazio = o primeiro mês com venda no Mintly. Empresa aberta antes do Mintly informa o mês e o faturamento
+   * anterior (`revenueBeforeMintly`).
+   */
+  activityStart: activityStartSchema.optional(),
+  /** Faturamento mensal antes do Mintly (até 12 meses), para o RBT12. Ausente = nenhum informado. */
+  revenueBeforeMintly: revenueBeforeSchema.optional(),
+  /**
    * Perfil de venda de cada categoria do cardápio (elasticidade padrão do simulador de preço). Gravado pela rota
    * `PUT /menu-items/category-profiles` (dono ou gerente), não pelo PATCH do restaurante. Ausente = nenhum escolhido.
    */
@@ -65,4 +95,8 @@ export const restaurantUpdateSchema = s.object({
   taxRegime: s.type().enum(TaxRegime),
   /** Substitui a lista inteira. */
   team: teamSchema,
+  /** String vazia apaga. */
+  activityStart: activityStartSchema,
+  /** Substitui a lista inteira ([] apaga). */
+  revenueBeforeMintly: revenueBeforeSchema,
 }).partial()
