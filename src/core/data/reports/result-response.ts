@@ -108,7 +108,11 @@ export interface ResultReport {
   current: ResultLines
   previous: ResultLines
   deltas: Record<ResultLineKey, number | null>
-  tax: { regime: TaxRegime | null; effectiveRate: number | null; meiMonthlyDas: number | null }
+  /**
+   * `meiMonthlyDas`: no MEI, o DAS fixo do mês (o mesmo valor em todas as telas). `meiDasEstimated`: sem o valor
+   * configurado, o DAS foi estimado pelos pagamentos de imposto dos últimos 12 meses (o valor típico de um DAS).
+   */
+  tax: { regime: TaxRegime | null; effectiveRate: number | null; meiMonthlyDas: number | null; meiDasEstimated: boolean }
   operatingExpenseItems: OpexItem[]
   breakEven: ResultBreakEven
   history: ResultHistoryPoint[]
